@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load settings_value %}
+
+{% block content %}
+    <h1>Coming Soon</h1>
+    <p>The <span class="highlight">RSG Django Template</span> website is under construction and will be coming soon.</p>
+    <p>For information about the project in the meantime, please email: <a href="mailto:{% settings_value 'ADMIN_EMAIL' %}">{% settings_value 'ADMIN_EMAIL' %}</a></p>
+{% endblock %}

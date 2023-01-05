@@ -1,0 +1,72 @@
+---
+
+Django Tests:
+  image: python:3.6
+  tags:
+    - bear-gitlab-runners
+  before_script:
+    - pip install --upgrade pip
+    - pip install -r requirements.txt
+    - pip install -r requirements-test.txt
+  script:
+    - cd django
+    - mv core/local_settings.test.py core/local_settings.py
+    - coverage run manage.py test
+    - coverage report
+    - coverage xml -o coverage.xml
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: django/coverage.xml     
+
+
+accessibility:
+  tags:
+  - bear-gitlab-runners
+  image: python:3.6
+  before_script:
+    - apt update
+    - DEBIAN_FRONTEND=noninteractive apt install -y npm libx11-xcb1 libxcomposite1 libxcursor1 libxss1 libgbm1
+                                                    libatk-bridge2.0-0 libgtk-3-0 libxrandr2 libasound2
+                                                    libxdamage1 libxi6 libxtst6 libnss3 libcups2 libatk1.0-0
+    - npm install --prefix ./ pa11y-ci
+    - pip install --upgrade pip
+    - pip install -r requirements.txt
+  script:
+    - cd django
+    - mv core/local_settings.test.py core/local_settings.py
+    - python manage.py migrate
+    - python manage.py runserver & sleep 5
+    - npx pa11y-ci
+
+flake8:
+  tags:
+  - bear-gitlab-runners
+  image: pipelinecomponents/flake8:latest
+  script:
+    - flake8 -v .
+
+stylelint:
+  tags:
+  - bear-gitlab-runners
+  image: pipelinecomponents/stylelint
+  script:
+    - stylelint .
+
+eslint:
+  tags:
+  - bear-gitlab-runners
+  image: pipelinecomponents/eslint
+  script:
+    # - eslint .
+    - echo "Enable eslint when JS added"
+
+curlylint:
+  image: python:3.6
+  tags:
+    - bear-gitlab-runners
+  before_script:
+    - pip install curlylint
+  script:
+    - curlylint --verbose .

@@ -1,0 +1,17 @@
+[run]
+branch = True
+include =
+        ./*
+omit =
+        *tests*
+        *__init__*
+        */migrations/*
+        *settings*
+        */wsgi.py
+        manage.py
+[report]
+exclude_lines = 
+        pragma: no cover
+        if __name__ == .__main__.:
+[html]
+directory = coverage_html_report

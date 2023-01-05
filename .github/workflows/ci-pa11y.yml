@@ -1,0 +1,34 @@
+name: ci-accessibility-tests
+
+on: [pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: [3.6.8]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install JS Dependencies
+      run: |
+        sudo npm install -g --unsafe-perm=true --allow-root pa11y-ci
+    - name: Install Python Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -r requirements-test.txt
+    - name: Run Tests
+      run: |
+        cd django
+        mv core/local_settings.test.py core/local_settings.py
+        python manage.py migrate
+        python manage.py runserver & sleep 5
+        pa11y-ci

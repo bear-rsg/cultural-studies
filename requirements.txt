@@ -1,0 +1,4 @@
+# Please follow suitable version specifiers, as outlined in https://www.python.org/dev/peps/pep-0440/#version-specifiers
+# For Django versioning we use ~= (e.g. Django~=3.2.0) which will keep the minor version up to date (e.g. the latest version prior to 3.3.0)
+
+Django~=3.2.0

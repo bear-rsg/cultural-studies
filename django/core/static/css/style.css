@@ -1,0 +1,38 @@
+body {
+    background: black;
+    font-family: 'Roboto', sans-serif;
+    font-weight: bolder;
+    padding: 10vh 5vw 15vh 5vw;
+    color: white;
+}
+
+footer {
+    margin-top: 6em;
+    border-top: 1px solid white;
+    font-size: 0.8em;
+}
+
+footer a {
+    display: inline-block;
+    margin: 0.5em;
+}
+
+h1 {
+    font-size: 4em;
+}
+
+p,
+ul {
+    font-size: 1.7em;
+    margin-bottom: 2em;
+    line-height: 1.3em;
+}
+
+a {
+    color: white;
+    text-decoration: underline;
+}
+
+.highlight {
+    color: white;
+}

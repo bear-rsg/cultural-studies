@@ -1,0 +1,29 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>RSG Django Template (Coming Soon)</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="https://fonts.googleapis.com/css?family=Roboto:700,900" rel="stylesheet">
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    </head>
+    <body>
+        <main role="main" id="main">
+            {% block content %}{% endblock %}
+        </main>
+        <footer role="contentinfo">
+            <p>
+                <a href="https://www.birmingham.ac.uk/privacy/index.aspx" target="_blank">Privacy</a> |
+                <a href="https://www.birmingham.ac.uk/legal/index.aspx" target="_blank">Legal</a> |
+                <a href="https://www.birmingham.ac.uk/university/governance/policies-regs/information/index.aspx" target="_blank">Freedom of Information</a> |
+                <a href="{% url 'general:cookies' %}">Cookies</a> |
+                <a href="https://accessibility.bear.bham.ac.uk/" target="_blank">Accessibility</a>
+            </p>
+        </footer>
+
+        <!-- JavaScript -->
+        <script src="{% static 'js/cookiesmsg.js' %}"></script>
+    </body>
+</html>
