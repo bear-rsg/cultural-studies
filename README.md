@@ -1,4 +1,4 @@
-# RSG Django Template
+# Cultural Studies
 
 This project is a Django-based website created by the Research Software Group for the Cultural Studies research project led by Rebecca Roach, within the College of Arts and Law at the University of Birmingham.
 
