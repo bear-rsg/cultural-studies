@@ -27,6 +27,12 @@ else:
 # Set to ['*'] if in development, or specific IP addresses and domains if in production
 ALLOWED_HOSTS = ['*']/['culturalstudies.bham.ac.uk']
 
+# Use for Django Debug Toolbar. To hide DDT, simply comment this out.
+# DDT breaks accessibility CI, so don't include in local_settings.test.py
+INTERNAL_IPS = [
+    "127.0.0.1"
+]
+
 # Provide the email address for the site admin (e.g. the researcher/research team)
 ADMIN_EMAIL = '...@bham.ac.uk'
 
