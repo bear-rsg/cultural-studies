@@ -1,5 +1,4 @@
 from django.db import models
-from django.conf import settings
 from django.db.models.functions import Upper
 from location_field.models.plain import PlainLocationField
 
@@ -134,7 +133,11 @@ class Entity(models.Model):
     type = models.ForeignKey(SlEntityType, on_delete=models.SET_NULL, blank=True, null=True)
     date = models.DateField(blank=True, null=True)
     location = models.CharField(max_length=255, blank=True, null=True, verbose_name='location (search)')
-    location_coordinates = PlainLocationField(based_fields=['location'], zoom=7, blank=True, null=True, verbose_name='location (coordinates)')
+    location_coordinates = PlainLocationField(based_fields=['location'],
+                                              zoom=7,
+                                              blank=True,
+                                              null=True,
+                                              verbose_name='location (coordinates)')
 
     # Admin and meta fields
     admin_notes = models.TextField(blank=True, null=True)
@@ -160,7 +163,6 @@ class Event(models.Model):
     type = models.ForeignKey(SlEventType, on_delete=models.SET_NULL, blank=True, null=True)
     activity = models.ForeignKey(SlEventActivity, on_delete=models.SET_NULL, blank=True, null=True)
     language = models.ForeignKey(SlLanguage, on_delete=models.SET_NULL, blank=True, null=True)
-
 
     # Admin and meta fields
     admin_notes = models.TextField(blank=True, null=True)
@@ -201,10 +203,24 @@ class Item(models.Model):
     sponsorship = models.TextField(blank=True, null=True)
     publication_status = models.BooleanField(default=False)
     created_date = models.DateField(blank=True, null=True)
-    created_location = models.CharField(max_length=255, blank=True, null=True, verbose_name='created location (search)')
-    created_location_coordinates = PlainLocationField(based_fields=['created_location'], zoom=7, blank=True, null=True, verbose_name='holding location (coordinates)')
-    holding_location = models.CharField(max_length=255, blank=True, null=True, verbose_name='holding location (search)')
-    holding_location_coordinates = PlainLocationField(based_fields=['holding_location'], zoom=7, blank=True, null=True, verbose_name='holding location (coordinates)')
+    created_location = models.CharField(max_length=255,
+                                        blank=True,
+                                        null=True,
+                                        verbose_name='created location (search)')
+    created_location_coordinates = PlainLocationField(based_fields=['created_location'],
+                                                      zoom=7,
+                                                      blank=True,
+                                                      null=True,
+                                                      verbose_name='holding location (coordinates)')
+    holding_location = models.CharField(max_length=255,
+                                        blank=True,
+                                        null=True,
+                                        verbose_name='holding location (search)')
+    holding_location_coordinates = PlainLocationField(based_fields=['holding_location'],
+                                                      zoom=7,
+                                                      blank=True,
+                                                      null=True,
+                                                      verbose_name='holding location (coordinates)')
 
     # Admin and meta fields
     admin_notes = models.TextField(blank=True, null=True)
@@ -226,10 +242,18 @@ class Person(models.Model):
     other_names = models.CharField(max_length=255, blank=True, null=True)
     birth_date = models.DateField(blank=True, null=True)
     birth_location = models.CharField(max_length=255, verbose_name='birth location (search)')
-    birth_location_coordinates = PlainLocationField(based_fields=['birth_location'], zoom=7, blank=True, null=True, verbose_name='birth location (coordinates)')
+    birth_location_coordinates = PlainLocationField(based_fields=['birth_location'],
+                                                    zoom=7,
+                                                    blank=True,
+                                                    null=True,
+                                                    verbose_name='birth location (coordinates)')
     death_date = models.DateField(blank=True, null=True)
     death_location = models.CharField(max_length=255, verbose_name='death location (search)')
-    death_location_coordinates = PlainLocationField(based_fields=['death_location'], zoom=7, blank=True, null=True, verbose_name='death location (coordinates)')
+    death_location_coordinates = PlainLocationField(based_fields=['death_location'],
+                                                    zoom=7,
+                                                    blank=True,
+                                                    null=True,
+                                                    verbose_name='death location (coordinates)')
 
     # Admin and meta fields
     admin_notes = models.TextField(blank=True, null=True)
