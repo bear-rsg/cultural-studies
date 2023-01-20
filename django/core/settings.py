@@ -9,6 +9,7 @@ TEMPLATE_DIR = os.path.join(BASE_DIR, 'core/templates')
 # Application definition
 
 INSTALLED_APPS = [
+    'django_light',  # 3rd party, but must be before django.contrib.admin
     # Django default apps
     'django.contrib.admin',
     'django.contrib.auth',
@@ -17,12 +18,17 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
+    # 3rd Party apps
+    'location_field.apps.DefaultConfig',
+    'debug_toolbar',
     # Custom apps
     'account',
     'general',
+    'researchdata'
 ]
 
 MIDDLEWARE = [
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -51,6 +57,10 @@ TEMPLATES = [
             }
         },
     },
+]
+
+INTERNAL_IPS = [
+    "127.0.0.1"
 ]
 
 WSGI_APPLICATION = 'core.wsgi.application'
@@ -109,6 +119,14 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/latest/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# django-location-field (LocationField) settings
+
+LOCATION_FIELD = {
+    'map.provider': 'openstreetmap',
+    'search.provider': 'nominatim',
+}
 
 
 # Import local_settings.py
