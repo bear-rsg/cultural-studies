@@ -120,7 +120,7 @@ class PersonAdminView(admin.ModelAdmin):
     """
     Customise the Person section of the admin dashboard
     """
-    list_display = ('first_name', 'create_from_template')
+    list_display = ('first_name', 'use_as_template')
     list_per_page = ADMIN_VIEW_LIST_PER_PAGE_DEFAULT
     inlines = (
         PersonHistoryInline,
@@ -129,9 +129,9 @@ class PersonAdminView(admin.ModelAdmin):
         RelItemAndPersonInline
     )
 
-    def create_from_template(self, obj):
-        return mark_safe(f'<a href="/dashboard/researchdata/person/add/?obj_id={obj.id}">Create From Template</a>')
-    create_from_template.short_description = 'Create From Template'
+    def use_as_template(self, obj):
+        return mark_safe(f'<a href="/dashboard/researchdata/person/add/?obj_id={obj.id}">Use as Template</a>')
+    use_as_template.short_description = 'Use as Template'
 
     def add_view(self, request, form_url='', extra_context=None):
         """
