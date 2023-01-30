@@ -1,61 +1,72 @@
 from django.contrib import admin
+from django.contrib.auth.models import Group
 from . import models
 
+
 admin.site.site_header = 'Cultural Studies: Admin Dashboard'
-REL_INLINE_EXTRA_DEFAULT = 1
+admin.site.unregister(Group)
+INLINE_EXTRA_DEFAULT = 1
 ADMIN_VIEW_LIST_PER_PAGE_DEFAULT = 50
 
 
 # Inlines
 
 
-class RelEntityAndEventInline(admin.TabularInline):
+class PersonHistoryInline(admin.StackedInline):
+    """
+    A subform/inline form for PersonHistory, to be used in the PersonAdminView
+    """
+    model = models.PersonHistory
+    extra = INLINE_EXTRA_DEFAULT
+
+
+class RelEntityAndEventInline(admin.StackedInline):
     """
     A subform/inline form for relationships between Entities and Events
     """
     model = models.RelEntityAndEvent
-    extra = REL_INLINE_EXTRA_DEFAULT
+    extra = INLINE_EXTRA_DEFAULT
 
 
-class RelEntityAndItemInline(admin.TabularInline):
+class RelEntityAndItemInline(admin.StackedInline):
     """
     A subform/inline form for relationships between Entities and Items
     """
     model = models.RelEntityAndItem
-    extra = REL_INLINE_EXTRA_DEFAULT
+    extra = INLINE_EXTRA_DEFAULT
 
 
-class RelEntityAndPersonInline(admin.TabularInline):
+class RelEntityAndPersonInline(admin.StackedInline):
     """
     A subform/inline form for relationships between Entities and Persons
     """
     model = models.RelEntityAndPerson
-    extra = REL_INLINE_EXTRA_DEFAULT
+    extra = INLINE_EXTRA_DEFAULT
 
 
-class RelEventAndPersonInline(admin.TabularInline):
+class RelEventAndPersonInline(admin.StackedInline):
     """
     A subform/inline form for relationships between Events and Persons
     """
     model = models.RelEventAndPerson
-    extra = REL_INLINE_EXTRA_DEFAULT
+    extra = INLINE_EXTRA_DEFAULT
 
 
-class RelItemAndItemInline(admin.TabularInline):
+class RelItemAndItemInline(admin.StackedInline):
     """
     A subform/inline form for relationships between Items and other Items
     """
     model = models.RelItemAndItem
-    extra = REL_INLINE_EXTRA_DEFAULT
+    extra = INLINE_EXTRA_DEFAULT
     fk_name = 'item_1'
 
 
-class RelItemAndPersonInline(admin.TabularInline):
+class RelItemAndPersonInline(admin.StackedInline):
     """
     A subform/inline form for relationships between Items and Persons
     """
     model = models.RelItemAndPerson
-    extra = REL_INLINE_EXTRA_DEFAULT
+    extra = INLINE_EXTRA_DEFAULT
 
 
 # AdminViews
@@ -110,6 +121,7 @@ class PersonAdminView(admin.ModelAdmin):
     list_display = ('first_name',)
     list_per_page = ADMIN_VIEW_LIST_PER_PAGE_DEFAULT
     inlines = (
+        PersonHistoryInline,
         RelEntityAndPersonInline,
         RelEventAndPersonInline,
         RelItemAndPersonInline
