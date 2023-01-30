@@ -1,5 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.models import Group
+from django.forms.models import model_to_dict
+from django.utils.html import mark_safe
 from . import models
 
 
@@ -118,7 +120,7 @@ class PersonAdminView(admin.ModelAdmin):
     """
     Customise the Person section of the admin dashboard
     """
-    list_display = ('first_name',)
+    list_display = ('first_name', 'create_from_template')
     list_per_page = ADMIN_VIEW_LIST_PER_PAGE_DEFAULT
     inlines = (
         PersonHistoryInline,
@@ -126,3 +128,24 @@ class PersonAdminView(admin.ModelAdmin):
         RelEventAndPersonInline,
         RelItemAndPersonInline
     )
+
+    def create_from_template(self, obj):
+        return mark_safe(f'<a href="/dashboard/researchdata/person/add/?obj_id={obj.id}">Create From Template</a>')
+    create_from_template.short_description = 'Create From Template'
+
+    def add_view(self, request, form_url='', extra_context=None):
+        """
+        To allow for existing objects to be used as 'templates'
+        i.e. pre-filled form fields on new object form.
+        If the 'obj_id' parameter is provided in URL
+        e.g. ".../add/?obj_id=1" will prefill a new obj form with data from person object
+        """
+
+        # If 'obj_id' is a provided parameter, add the object's data to the request
+        obj_id = request.GET.get('obj_id', None)
+        if obj_id is not None:
+            g = request.GET.copy()
+            g.update(model_to_dict(models.Person.objects.get(id=obj_id)))
+            request.GET = g
+
+        return super().add_view(request, form_url, extra_context)
