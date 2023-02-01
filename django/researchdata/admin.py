@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.models import Group
 from django.forms.models import model_to_dict
 from django.utils.html import mark_safe
+from django.urls import reverse
 from . import models
 
 
@@ -73,7 +74,6 @@ class RelItemAndPersonInline(admin.StackedInline):
 
 # AdminViews
 
-from django.urls import reverse
 
 class GenericAdminView(admin.ModelAdmin):
     """
