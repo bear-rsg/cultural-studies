@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models.functions import Upper
 from location_field.models.plain import PlainLocationField
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 
 # Select List tables
@@ -157,12 +158,53 @@ class Event(models.Model):
     """
 
     name = models.CharField(max_length=255, unique=True)
-    date_start = models.DateTimeField(blank=True, null=True)
-    date_end = models.DateTimeField(blank=True, null=True)
-    date_other = models.CharField(max_length=1000, blank=True, null=True)
     type = models.ForeignKey(SlEventType, on_delete=models.SET_NULL, blank=True, null=True)
     activity = models.ForeignKey(SlEventActivity, on_delete=models.SET_NULL, blank=True, null=True)
     language = models.ForeignKey(SlLanguage, on_delete=models.SET_NULL, blank=True, null=True)
+
+    # Start date/time
+    start_date_year = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='start date (year)'
+    )
+    start_date_month = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(12)],
+        verbose_name='start date (month)'
+    )
+    start_date_day = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(31)],
+        verbose_name='start date (day)'
+    )
+    start_time = models.TimeField(blank=True, null=True)
+    start_date_time_details = models.CharField(max_length=1000, blank=True, null=True)
+
+    # End date/time
+    end_date_year = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='end date (year)'
+    )
+    end_date_month = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(12)],
+        verbose_name='end date (month)'
+    )
+    end_date_day = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(31)],
+        verbose_name='end date (day)'
+    )
+    end_time = models.TimeField(blank=True, null=True)
+    end_date_time_details = models.CharField(max_length=1000, blank=True, null=True)
 
     # Admin and meta fields
     admin_notes = models.TextField(blank=True, null=True)
@@ -240,15 +282,33 @@ class Person(models.Model):
     first_name = models.CharField(max_length=255, blank=True, null=True)
     last_name = models.CharField(max_length=255, blank=True, null=True)
     other_names = models.CharField(max_length=255, blank=True, null=True)
-    birth_date = models.DateField(blank=True, null=True)
-    birth_location = models.CharField(max_length=255, verbose_name='birth location (search)')
+
+    # Birth
+    birth_year = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1850), MaxValueValidator(2030)]
+    )
+    birth_location = models.CharField(max_length=255,
+                                      verbose_name='birth location (search)',
+                                      blank=True,
+                                      null=True)
     birth_location_coordinates = PlainLocationField(based_fields=['birth_location'],
                                                     zoom=7,
                                                     blank=True,
                                                     null=True,
                                                     verbose_name='birth location (coordinates)')
-    death_date = models.DateField(blank=True, null=True)
-    death_location = models.CharField(max_length=255, verbose_name='death location (search)')
+
+    # Death
+    death_year = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1850), MaxValueValidator(2030)]
+    )
+    death_location = models.CharField(max_length=255,
+                                      verbose_name='death location (search)',
+                                      blank=True,
+                                      null=True)
     death_location_coordinates = PlainLocationField(based_fields=['death_location'],
                                                     zoom=7,
                                                     blank=True,
@@ -269,6 +329,59 @@ class Person(models.Model):
         return self.name
 
 
+class PersonHistory(models.Model):
+    """
+    Historical changes to a Person object, e.g. previous names, titles, etc.
+    """
+
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, blank=True, null=True)
+    first_name = models.CharField(max_length=255, blank=True, null=True)
+    last_name = models.CharField(max_length=255, blank=True, null=True)
+    other_names = models.CharField(max_length=255, blank=True, null=True)
+
+    # Change start date
+    start_date_year = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='start date (year)'
+    )
+    start_date_month = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(12)],
+        verbose_name='start date (month)'
+    )
+    start_date_day = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(31)],
+        verbose_name='start date (day)'
+    )
+    start_date_details = models.CharField(max_length=1000, blank=True, null=True)
+
+    # Change end date
+    end_date_year = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='end date (year)'
+    )
+    end_date_month = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(12)],
+        verbose_name='end date (month)'
+    )
+    end_date_day = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(31)],
+        verbose_name='end date (day)'
+    )
+    end_date_details = models.CharField(max_length=1000, blank=True, null=True)
+
+
 # Relationship tables (M2M with additional fields)
 
 
@@ -280,6 +393,9 @@ class RelEntityAndEvent(models.Model):
     entity = models.ForeignKey(Entity, on_delete=models.RESTRICT)
     event = models.ForeignKey(Event, on_delete=models.RESTRICT)
     type = models.ForeignKey(SlTypeRelEntityAndEvent, on_delete=models.SET_NULL, blank=True, null=True)
+    relationship_started = models.CharField(max_length=1000, blank=True, null=True)
+    relationship_ended = models.CharField(max_length=1000, blank=True, null=True)
+    relationship_details = models.TextField(blank=True, null=True)
 
 
 class RelEntityAndItem(models.Model):
@@ -290,6 +406,11 @@ class RelEntityAndItem(models.Model):
     entity = models.ForeignKey(Entity, on_delete=models.RESTRICT)
     item = models.ForeignKey(Item, on_delete=models.RESTRICT)
     type = models.ForeignKey(SlTypeRelEntityAndItem, on_delete=models.SET_NULL, blank=True, null=True)
+    relationship_started = models.CharField(max_length=1000, blank=True, null=True)
+    relationship_ended = models.CharField(max_length=1000, blank=True, null=True)
+    relationship_started = models.CharField(max_length=1000, blank=True, null=True)
+    relationship_ended = models.CharField(max_length=1000, blank=True, null=True)
+    relationship_details = models.TextField(blank=True, null=True)
 
 
 class RelEntityAndPerson(models.Model):
@@ -300,6 +421,9 @@ class RelEntityAndPerson(models.Model):
     entity = models.ForeignKey(Entity, on_delete=models.RESTRICT)
     person = models.ForeignKey(Person, on_delete=models.RESTRICT)
     type = models.ForeignKey(SlTypeRelEntityAndPerson, on_delete=models.SET_NULL, blank=True, null=True)
+    relationship_started = models.CharField(max_length=1000, blank=True, null=True)
+    relationship_ended = models.CharField(max_length=1000, blank=True, null=True)
+    relationship_details = models.TextField(blank=True, null=True)
 
 
 class RelEventAndPerson(models.Model):
@@ -310,6 +434,9 @@ class RelEventAndPerson(models.Model):
     event = models.ForeignKey(Event, on_delete=models.RESTRICT)
     person = models.ForeignKey(Person, on_delete=models.RESTRICT)
     type = models.ForeignKey(SlTypeRelEventAndPerson, on_delete=models.SET_NULL, blank=True, null=True)
+    relationship_started = models.CharField(max_length=1000, blank=True, null=True)
+    relationship_ended = models.CharField(max_length=1000, blank=True, null=True)
+    relationship_details = models.TextField(blank=True, null=True)
 
 
 class RelItemAndItem(models.Model):
@@ -320,6 +447,9 @@ class RelItemAndItem(models.Model):
     item_1 = models.ForeignKey(Item, on_delete=models.RESTRICT, related_name='item_1')
     item_2 = models.ForeignKey(Item, on_delete=models.RESTRICT, related_name='item_2')
     type = models.ForeignKey(SlTypeRelItemAndItem, on_delete=models.SET_NULL, blank=True, null=True)
+    relationship_started = models.CharField(max_length=1000, blank=True, null=True)
+    relationship_ended = models.CharField(max_length=1000, blank=True, null=True)
+    relationship_details = models.TextField(blank=True, null=True)
 
 
 class RelItemAndPerson(models.Model):
@@ -330,3 +460,6 @@ class RelItemAndPerson(models.Model):
     item = models.ForeignKey(Item, on_delete=models.RESTRICT)
     person = models.ForeignKey(Person, on_delete=models.RESTRICT)
     type = models.ForeignKey(SlTypeRelItemAndPerson, on_delete=models.RESTRICT, blank=True, null=True)
+    relationship_started = models.CharField(max_length=1000, blank=True, null=True)
+    relationship_ended = models.CharField(max_length=1000, blank=True, null=True)
+    relationship_details = models.TextField(blank=True, null=True)
