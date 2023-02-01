@@ -73,14 +73,44 @@ class RelItemAndPersonInline(admin.StackedInline):
 
 # AdminViews
 
+from django.urls import reverse
+
+class GenericAdminView(admin.ModelAdmin):
+    """
+    A generic admin view to be inherited and extended by specific admin views below
+    """
+    list_display = ('id', 'use_as_template',)
+    list_per_page = ADMIN_VIEW_LIST_PER_PAGE_DEFAULT
+
+    def use_as_template(self, obj):
+        add_form_url = reverse(f'admin:researchdata_{self.model._meta.model_name}_add')
+        return mark_safe(f'<a href="{add_form_url}?obj_id={obj.id}">Use as Template</a>')
+    use_as_template.short_description = 'Use as Template'
+
+    def add_view(self, request, form_url='', extra_context=None):
+        """
+        To allow for existing objects to be used as 'templates'
+        i.e. pre-filled form fields on new object form.
+        If the 'obj_id' parameter is provided in URL
+        e.g. ".../add/?obj_id=1" will prefill a new obj form with data from an existing object
+        """
+
+        # If 'obj_id' is a provided parameter, add the object's data to the request
+        obj_id = request.GET.get('obj_id', None)
+        if obj_id is not None:
+            g = request.GET.copy()
+            g.update(model_to_dict(self.model.objects.get(id=obj_id)))
+            request.GET = g
+
+        return super().add_view(request, form_url, extra_context)
+
 
 @admin.register(models.Entity)
-class EntityAdminView(admin.ModelAdmin):
+class EntityAdminView(GenericAdminView):
     """
     Customise the Entity section of the admin dashboard
     """
-    list_display = ('name',)
-    list_per_page = ADMIN_VIEW_LIST_PER_PAGE_DEFAULT
+    list_display = ('name', 'use_as_template')
     inlines = (
         RelEntityAndEventInline,
         RelEntityAndItemInline,
@@ -89,12 +119,11 @@ class EntityAdminView(admin.ModelAdmin):
 
 
 @admin.register(models.Event)
-class EventAdminView(admin.ModelAdmin):
+class EventAdminView(GenericAdminView):
     """
     Customise the Event section of the admin dashboard
     """
-    list_display = ('name',)
-    list_per_page = ADMIN_VIEW_LIST_PER_PAGE_DEFAULT
+    list_display = ('name', 'use_as_template')
     inlines = (
         RelEntityAndEventInline,
         RelEventAndPersonInline
@@ -102,12 +131,11 @@ class EventAdminView(admin.ModelAdmin):
 
 
 @admin.register(models.Item)
-class ItemAdminView(admin.ModelAdmin):
+class ItemAdminView(GenericAdminView):
     """
     Customise the Item section of the Django admin
     """
-    list_display = ('name',)
-    list_per_page = ADMIN_VIEW_LIST_PER_PAGE_DEFAULT
+    list_display = ('name', 'use_as_template')
     inlines = (
         RelEntityAndItemInline,
         RelItemAndItemInline,
@@ -116,36 +144,14 @@ class ItemAdminView(admin.ModelAdmin):
 
 
 @admin.register(models.Person)
-class PersonAdminView(admin.ModelAdmin):
+class PersonAdminView(GenericAdminView):
     """
     Customise the Person section of the admin dashboard
     """
     list_display = ('first_name', 'use_as_template')
-    list_per_page = ADMIN_VIEW_LIST_PER_PAGE_DEFAULT
     inlines = (
         PersonHistoryInline,
         RelEntityAndPersonInline,
         RelEventAndPersonInline,
         RelItemAndPersonInline
     )
-
-    def use_as_template(self, obj):
-        return mark_safe(f'<a href="/dashboard/researchdata/person/add/?obj_id={obj.id}">Use as Template</a>')
-    use_as_template.short_description = 'Use as Template'
-
-    def add_view(self, request, form_url='', extra_context=None):
-        """
-        To allow for existing objects to be used as 'templates'
-        i.e. pre-filled form fields on new object form.
-        If the 'obj_id' parameter is provided in URL
-        e.g. ".../add/?obj_id=1" will prefill a new obj form with data from person object
-        """
-
-        # If 'obj_id' is a provided parameter, add the object's data to the request
-        obj_id = request.GET.get('obj_id', None)
-        if obj_id is not None:
-            g = request.GET.copy()
-            g.update(model_to_dict(models.Person.objects.get(id=obj_id)))
-            request.GET = g
-
-        return super().add_view(request, form_url, extra_context)
