@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models.functions import Upper
+from location_field.models.plain import PlainLocationField
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 
@@ -191,36 +192,53 @@ class EntityHistory(models.Model):
     """
 
     entity = models.ForeignKey(Entity,
-                              on_delete=models.CASCADE,
-                              blank=True,
-                              null=True,
-                              related_name='entity_history')
+                               on_delete=models.CASCADE,
+                               blank=True,
+                               null=True,
+                               related_name='entity_history')
     name = models.CharField(max_length=255, unique=True)
-    type = models.ForeignKey(SlEntityType, on_delete=models.SET_NULL, blank=True, null=True)
-    parent_entity = models.ForeignKey(Entity,
-                                      on_delete=models.CASCADE,
-                                      blank=True,
-                                      null=True,
-                                      related_name='child_entity')
-    date_year = models.IntegerField(
+
+    # Change start date
+    start_date_year = models.IntegerField(
         blank=True,
         null=True,
         validators=[MinValueValidator(1900), MaxValueValidator(2030)],
-        verbose_name='date (year)'
+        verbose_name='start date (year)'
     )
-    date_month = models.IntegerField(
+    start_date_month = models.IntegerField(
         blank=True,
         null=True,
         validators=[MinValueValidator(1), MaxValueValidator(12)],
-        verbose_name='date (month)'
+        verbose_name='start date (month)'
     )
-    date_day = models.IntegerField(
+    start_date_day = models.IntegerField(
         blank=True,
         null=True,
         validators=[MinValueValidator(1), MaxValueValidator(31)],
-        verbose_name='date (day)'
+        verbose_name='start date (day)'
     )
-    date_details = models.CharField(max_length=1000, blank=True, null=True)
+    start_date_details = models.CharField(max_length=1000, blank=True, null=True)
+
+    # Change end date
+    end_date_year = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='end date (year)'
+    )
+    end_date_month = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(12)],
+        verbose_name='end date (month)'
+    )
+    end_date_day = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(31)],
+        verbose_name='end date (day)'
+    )
+    end_date_details = models.CharField(max_length=1000, blank=True, null=True)
 
     class Meta:
         verbose_name_plural = 'entity histories'
@@ -236,6 +254,17 @@ class Event(models.Model):
     activity = models.ForeignKey(SlEventActivity, on_delete=models.SET_NULL, blank=True, null=True)
     language = models.ForeignKey(SlLanguage, on_delete=models.SET_NULL, blank=True, null=True)
     frequency = models.ForeignKey(SlEventFrequency, on_delete=models.SET_NULL, blank=True, null=True)
+
+    # Location
+    location = models.CharField(max_length=255,
+                                blank=True,
+                                null=True,
+                                verbose_name='location (search)')
+    location_coordinates = PlainLocationField(based_fields=['location'],
+                                              zoom=7,
+                                              blank=True,
+                                              null=True,
+                                              verbose_name='location (coordinates)')
 
     # Start date/time
     start_date_year = models.IntegerField(
