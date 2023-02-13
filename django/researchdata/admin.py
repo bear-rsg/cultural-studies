@@ -23,6 +23,15 @@ class PersonHistoryInline(admin.StackedInline):
     extra = INLINE_EXTRA_DEFAULT
 
 
+class EntityHistoryInline(admin.StackedInline):
+    """
+    A subform/inline form for EntityHistory, to be used in the EntityAdminView
+    """
+    model = models.EntityHistory
+    extra = INLINE_EXTRA_DEFAULT
+    fk_name = 'entity'
+
+
 class RelEntityAndEventInline(admin.StackedInline):
     """
     A subform/inline form for relationships between Entities and Events
@@ -44,6 +53,14 @@ class RelEntityAndPersonInline(admin.StackedInline):
     A subform/inline form for relationships between Entities and Persons
     """
     model = models.RelEntityAndPerson
+    extra = INLINE_EXTRA_DEFAULT
+
+
+class RelEventAndItemInline(admin.StackedInline):
+    """
+    A subform/inline form for relationships between Events and Items
+    """
+    model = models.RelEventAndItem
     extra = INLINE_EXTRA_DEFAULT
 
 
@@ -73,6 +90,27 @@ class RelItemAndPersonInline(admin.StackedInline):
 
 
 # AdminViews
+
+
+class GenericSlAdminView(admin.ModelAdmin):
+    """
+    This is a generic base class that can be inherited from by Select List models
+
+    This class can either be inherited from if further customisations are needed, e.g.:
+    class [ModelName]AdminView(GenericAdminView):
+
+    Or if no changes are needed, just register a model, e.g.:
+    admin.site.register([model name], GenericAdminView)
+    """
+    list_display = ('id', 'name')
+    list_display_links = ('id',)
+    search_fields = ('name',)
+
+    def get_model_perms(self, request):
+        """
+        Hide SL tables from admin side bar, but still CRUD via inline shortcuts on main models
+        """
+        return {}
 
 
 class GenericAdminView(admin.ModelAdmin):
@@ -112,6 +150,7 @@ class EntityAdminView(GenericAdminView):
     """
     list_display = ('name', 'use_as_template')
     inlines = (
+        EntityHistoryInline,
         RelEntityAndEventInline,
         RelEntityAndItemInline,
         RelEntityAndPersonInline
@@ -126,6 +165,7 @@ class EventAdminView(GenericAdminView):
     list_display = ('name', 'use_as_template')
     inlines = (
         RelEntityAndEventInline,
+        RelEventAndItemInline,
         RelEventAndPersonInline
     )
 
@@ -138,6 +178,7 @@ class ItemAdminView(GenericAdminView):
     list_display = ('name', 'use_as_template')
     inlines = (
         RelEntityAndItemInline,
+        RelEventAndItemInline,
         RelItemAndItemInline,
         RelItemAndPersonInline
     )
@@ -155,3 +196,23 @@ class PersonAdminView(GenericAdminView):
         RelEventAndPersonInline,
         RelItemAndPersonInline
     )
+
+
+# Register SL Admin Views
+admin.site.register(models.SlEntityType, GenericSlAdminView)
+admin.site.register(models.SlEventActivity, GenericSlAdminView)
+admin.site.register(models.SlEventFrequency, GenericSlAdminView)
+admin.site.register(models.SlEventType, GenericSlAdminView)
+admin.site.register(models.SlItemFindingAid, GenericSlAdminView)
+admin.site.register(models.SlItemMedia, GenericSlAdminView)
+admin.site.register(models.SlItemPublicationStatus, GenericSlAdminView)
+admin.site.register(models.SlItemType, GenericSlAdminView)
+admin.site.register(models.SlLanguage, GenericSlAdminView)
+admin.site.register(models.SlPersonTitle, GenericSlAdminView)
+admin.site.register(models.SlTypeRelEntityAndEvent, GenericSlAdminView)
+admin.site.register(models.SlTypeRelEntityAndItem, GenericSlAdminView)
+admin.site.register(models.SlTypeRelEntityAndPerson, GenericSlAdminView)
+admin.site.register(models.SlTypeRelEventAndItem, GenericSlAdminView)
+admin.site.register(models.SlTypeRelEventAndPerson, GenericSlAdminView)
+admin.site.register(models.SlTypeRelItemAndItem, GenericSlAdminView)
+admin.site.register(models.SlTypeRelItemAndPerson, GenericSlAdminView)

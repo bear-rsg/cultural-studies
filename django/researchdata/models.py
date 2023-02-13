@@ -37,6 +37,13 @@ class SlEventActivity(SlAbstract):
     """
 
 
+class SlEventFrequency(SlAbstract):
+    """
+    Select List model used by Event model (inherits from SlAbstract model)
+    The frequency that the event repeats. E.g. weekly, monthly, annually
+    """
+
+
 class SlEventType(SlAbstract):
     """
     Select List model used by Event model (inherits from SlAbstract model)
@@ -44,10 +51,24 @@ class SlEventType(SlAbstract):
     """
 
 
+class SlItemFindingAid(SlAbstract):
+    """
+    Select List model used by Item model (inherits from SlAbstract model)
+    A document containing research findings, from which Items are obtained
+    """
+
+
 class SlItemMedia(SlAbstract):
     """
     Select List model used by Item model (inherits from SlAbstract model)
     The type of media of an item. E.g. print, video
+    """
+
+
+class SlItemPublicationStatus(SlAbstract):
+    """
+    Select List model used by Item model (inherits from SlAbstract model)
+    The publication status of an item. E.g. published, unpublished
     """
 
 
@@ -62,13 +83,6 @@ class SlLanguage(SlAbstract):
     """
     Select List model used by various models (inherits from SlAbstract model)
     A language. E.g. English, French, German
-    """
-
-
-class SlLocation(SlAbstract):
-    """
-    Select List model used by various models (inherits from SlAbstract model)
-    A geographical location. E.g. Birmingham, London, Paris
     """
 
 
@@ -97,6 +111,13 @@ class SlTypeRelEntityAndPerson(SlAbstract):
     """
     Select List model used by RelEntityAndPerson (inherits from SlAbstract model)
     A type of relationship between Entity and Person
+    """
+
+
+class SlTypeRelEventAndItem(SlAbstract):
+    """
+    Select List model used by RelEventAndItem (inherits from SlAbstract model)
+    A type of relationship between Event and Item
     """
 
 
@@ -132,13 +153,26 @@ class Entity(models.Model):
 
     name = models.CharField(max_length=255, unique=True)
     type = models.ForeignKey(SlEntityType, on_delete=models.SET_NULL, blank=True, null=True)
-    date = models.DateField(blank=True, null=True)
-    location = models.CharField(max_length=255, blank=True, null=True, verbose_name='location (search)')
-    location_coordinates = PlainLocationField(based_fields=['location'],
-                                              zoom=7,
-                                              blank=True,
-                                              null=True,
-                                              verbose_name='location (coordinates)')
+    parent_entity = models.ForeignKey('Entity', on_delete=models.CASCADE, blank=True, null=True)
+    date_year = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='date (year)'
+    )
+    date_month = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(12)],
+        verbose_name='date (month)'
+    )
+    date_day = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(31)],
+        verbose_name='date (day)'
+    )
+    date_details = models.CharField(max_length=1000, blank=True, null=True)
 
     # Admin and meta fields
     admin_notes = models.TextField(blank=True, null=True)
@@ -152,6 +186,64 @@ class Entity(models.Model):
         verbose_name_plural = 'entities'
 
 
+class EntityHistory(models.Model):
+    """
+    Historical changes to a Entity object, e.g. previous names, types, etc.
+    """
+
+    entity = models.ForeignKey(Entity,
+                               on_delete=models.CASCADE,
+                               blank=True,
+                               null=True,
+                               related_name='entity_history')
+    name = models.CharField(max_length=255, unique=True)
+
+    # Change start date
+    start_date_year = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='start date (year)'
+    )
+    start_date_month = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(12)],
+        verbose_name='start date (month)'
+    )
+    start_date_day = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(31)],
+        verbose_name='start date (day)'
+    )
+    start_date_details = models.CharField(max_length=1000, blank=True, null=True)
+
+    # Change end date
+    end_date_year = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='end date (year)'
+    )
+    end_date_month = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(12)],
+        verbose_name='end date (month)'
+    )
+    end_date_day = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(31)],
+        verbose_name='end date (day)'
+    )
+    end_date_details = models.CharField(max_length=1000, blank=True, null=True)
+
+    class Meta:
+        verbose_name_plural = 'entity histories'
+
+
 class Event(models.Model):
     """
     A meeting, conference, seminar, etc.
@@ -161,6 +253,18 @@ class Event(models.Model):
     type = models.ForeignKey(SlEventType, on_delete=models.SET_NULL, blank=True, null=True)
     activity = models.ForeignKey(SlEventActivity, on_delete=models.SET_NULL, blank=True, null=True)
     language = models.ForeignKey(SlLanguage, on_delete=models.SET_NULL, blank=True, null=True)
+    frequency = models.ForeignKey(SlEventFrequency, on_delete=models.SET_NULL, blank=True, null=True)
+
+    # Location
+    location = models.CharField(max_length=255,
+                                blank=True,
+                                null=True,
+                                verbose_name='location (search)')
+    location_coordinates = PlainLocationField(based_fields=['location'],
+                                              zoom=7,
+                                              blank=True,
+                                              null=True,
+                                              verbose_name='location (coordinates)')
 
     # Start date/time
     start_date_year = models.IntegerField(
@@ -215,54 +319,39 @@ class Event(models.Model):
         return self.name
 
 
-class FindingAid(models.Model):
-    """
-    A document containing research findings, from which Items (and other data objects) are obtained
-    """
-
-    name = models.CharField(max_length=255, unique=True)
-
-    # Admin and meta fields
-    admin_notes = models.TextField(blank=True, null=True)
-    meta_created_datetime = models.DateTimeField(auto_now_add=True, verbose_name='Created')
-    meta_lastupdated_datetime = models.DateTimeField(auto_now=True, verbose_name='Last Updated')
-
-    def __str__(self):
-        return self.name
-
-
 class Item(models.Model):
     """
     An object/document within a collection
     """
 
     name = models.CharField(max_length=255, unique=True)
-    finding_aid = models.ForeignKey(FindingAid, on_delete=models.SET_NULL, blank=True, null=True)
+    item_id = models.CharField(max_length=255, blank=True, null=True)
+    finding_aid = models.ForeignKey(SlItemFindingAid, on_delete=models.SET_NULL, blank=True, null=True)
     type = models.ForeignKey(SlItemType, on_delete=models.SET_NULL, blank=True, null=True)
     media = models.ForeignKey(SlItemMedia, on_delete=models.SET_NULL, blank=True, null=True)
     language = models.ForeignKey(SlLanguage, on_delete=models.SET_NULL, blank=True, null=True)
+    publication_status = models.ForeignKey(SlItemPublicationStatus, on_delete=models.SET_NULL, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     sponsorship = models.TextField(blank=True, null=True)
-    publication_status = models.BooleanField(default=False)
-    created_date = models.DateField(blank=True, null=True)
-    created_location = models.CharField(max_length=255,
-                                        blank=True,
-                                        null=True,
-                                        verbose_name='created location (search)')
-    created_location_coordinates = PlainLocationField(based_fields=['created_location'],
-                                                      zoom=7,
-                                                      blank=True,
-                                                      null=True,
-                                                      verbose_name='holding location (coordinates)')
-    holding_location = models.CharField(max_length=255,
-                                        blank=True,
-                                        null=True,
-                                        verbose_name='holding location (search)')
-    holding_location_coordinates = PlainLocationField(based_fields=['holding_location'],
-                                                      zoom=7,
-                                                      blank=True,
-                                                      null=True,
-                                                      verbose_name='holding location (coordinates)')
+    created_date_year = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='created date (year)'
+    )
+    created_date_month = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(12)],
+        verbose_name='created date (month)'
+    )
+    created_date_day = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(31)],
+        verbose_name='created date (day)'
+    )
+    created_date_details = models.CharField(max_length=1000, blank=True, null=True)
 
     # Admin and meta fields
     admin_notes = models.TextField(blank=True, null=True)
@@ -289,15 +378,6 @@ class Person(models.Model):
         null=True,
         validators=[MinValueValidator(1850), MaxValueValidator(2030)]
     )
-    birth_location = models.CharField(max_length=255,
-                                      verbose_name='birth location (search)',
-                                      blank=True,
-                                      null=True)
-    birth_location_coordinates = PlainLocationField(based_fields=['birth_location'],
-                                                    zoom=7,
-                                                    blank=True,
-                                                    null=True,
-                                                    verbose_name='birth location (coordinates)')
 
     # Death
     death_year = models.IntegerField(
@@ -305,15 +385,6 @@ class Person(models.Model):
         null=True,
         validators=[MinValueValidator(1850), MaxValueValidator(2030)]
     )
-    death_location = models.CharField(max_length=255,
-                                      verbose_name='death location (search)',
-                                      blank=True,
-                                      null=True)
-    death_location_coordinates = PlainLocationField(based_fields=['death_location'],
-                                                    zoom=7,
-                                                    blank=True,
-                                                    null=True,
-                                                    verbose_name='death location (coordinates)')
 
     # Admin and meta fields
     admin_notes = models.TextField(blank=True, null=True)
@@ -381,6 +452,9 @@ class PersonHistory(models.Model):
     )
     end_date_details = models.CharField(max_length=1000, blank=True, null=True)
 
+    class Meta:
+        verbose_name_plural = 'person histories'
+
 
 # Relationship tables (M2M with additional fields)
 
@@ -421,6 +495,19 @@ class RelEntityAndPerson(models.Model):
     entity = models.ForeignKey(Entity, on_delete=models.RESTRICT)
     person = models.ForeignKey(Person, on_delete=models.RESTRICT)
     type = models.ForeignKey(SlTypeRelEntityAndPerson, on_delete=models.SET_NULL, blank=True, null=True)
+    relationship_started = models.CharField(max_length=1000, blank=True, null=True)
+    relationship_ended = models.CharField(max_length=1000, blank=True, null=True)
+    relationship_details = models.TextField(blank=True, null=True)
+
+
+class RelEventAndItem(models.Model):
+    """
+    M2M relationship between Event and Item models
+    """
+
+    event = models.ForeignKey(Event, on_delete=models.RESTRICT)
+    item = models.ForeignKey(Item, on_delete=models.RESTRICT)
+    type = models.ForeignKey(SlTypeRelEventAndItem, on_delete=models.SET_NULL, blank=True, null=True)
     relationship_started = models.CharField(max_length=1000, blank=True, null=True)
     relationship_ended = models.CharField(max_length=1000, blank=True, null=True)
     relationship_details = models.TextField(blank=True, null=True)
