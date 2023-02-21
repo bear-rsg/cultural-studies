@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.models import Group
-from django.db.models import ManyToManyField
+from django.db.models import ManyToManyField, ForeignKey
 from django.forms.models import model_to_dict
 from django.utils.html import mark_safe
 from django.urls import reverse
@@ -23,95 +23,15 @@ def get_manytomany_fields(model, exclude=[]):
     return list(f.name for f in model._meta.get_fields() if type(f) == ManyToManyField and f.name not in exclude)
 
 
-# Inlines
-
-class EntityHistoryInline(admin.StackedInline):
+def get_fk_fields(model, exclude=[]):
     """
-    A subform/inline form for EntityHistory, to be used in the EntityAdminView
+    Returns a list of strings containing the field names of ForeignKey fields of a model
+    To ignore certain fields, provide a list of such fields using the exclude parameter
     """
-    model = models.EntityHistory
-    extra = INLINE_EXTRA_DEFAULT
-    fk_name = 'entity'
-    fieldsets = (
-        ('Entity History', {
-            'fields': (
-                'entity',
-                'name',
-                ('start_date_year', 'start_date_month', 'start_date_day'),
-                ('start_year_range_from', 'start_year_range_to', 'start_date_details'),
-                ('end_date_year', 'end_date_month', 'end_date_day'),
-                ('end_year_range_from', 'end_year_range_to', 'end_date_details'),
-            ),
-        }),
-    )
+    return list(f.name for f in model._meta.get_fields() if type(f) == ForeignKey and f.name not in exclude)
 
 
-class PersonHistoryInline(admin.StackedInline):
-    """
-    A subform/inline form for PersonHistory, to be used in the PersonAdminView
-    """
-    model = models.PersonHistory
-    extra = INLINE_EXTRA_DEFAULT
-
-
-class RelEntityAndEventInline(admin.StackedInline):
-    """
-    A subform/inline form for relationships between Entities and Events
-    """
-    model = models.RelEntityAndEvent
-    extra = INLINE_EXTRA_DEFAULT
-
-
-class RelEntityAndItemInline(admin.StackedInline):
-    """
-    A subform/inline form for relationships between Entities and Items
-    """
-    model = models.RelEntityAndItem
-    extra = INLINE_EXTRA_DEFAULT
-
-
-class RelEntityAndPersonInline(admin.StackedInline):
-    """
-    A subform/inline form for relationships between Entities and Persons
-    """
-    model = models.RelEntityAndPerson
-    extra = INLINE_EXTRA_DEFAULT
-
-
-class RelEventAndItemInline(admin.StackedInline):
-    """
-    A subform/inline form for relationships between Events and Items
-    """
-    model = models.RelEventAndItem
-    extra = INLINE_EXTRA_DEFAULT
-
-
-class RelEventAndPersonInline(admin.StackedInline):
-    """
-    A subform/inline form for relationships between Events and Persons
-    """
-    model = models.RelEventAndPerson
-    extra = INLINE_EXTRA_DEFAULT
-
-
-class RelItemAndItemInline(admin.StackedInline):
-    """
-    A subform/inline form for relationships between Items and other Items
-    """
-    model = models.RelItemAndItem
-    extra = INLINE_EXTRA_DEFAULT
-    fk_name = 'item_1'
-
-
-class RelItemAndPersonInline(admin.StackedInline):
-    """
-    A subform/inline form for relationships between Items and Persons
-    """
-    model = models.RelItemAndPerson
-    extra = INLINE_EXTRA_DEFAULT
-
-
-# AdminViews
+# Generic Classes (to be inherited below)
 
 
 class GenericSlAdminView(admin.ModelAdmin):
@@ -133,6 +53,18 @@ class GenericSlAdminView(admin.ModelAdmin):
         Hide SL tables from admin side bar, but still CRUD via inline shortcuts on main models
         """
         return {}
+
+
+class GenericStackedInlineAdminView(admin.StackedInline):
+    """
+    This is a generic base class that can be inherited from by StackedInline admin views
+    """
+    extra = INLINE_EXTRA_DEFAULT
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set all FK fields to be autocomplete_fields (i.e. searchable select lists)
+        self.autocomplete_fields = get_fk_fields(self.model)
 
 
 class GenericAdminView(admin.ModelAdmin):
@@ -168,6 +100,92 @@ class GenericAdminView(admin.ModelAdmin):
         super().__init__(*args, **kwargs)
         # Set all many to many fields to display the filter_horizontal widget
         self.filter_horizontal = get_manytomany_fields(self.model)
+        # Set all FK fields to be autocomplete_fields (i.e. searchable select lists)
+        self.autocomplete_fields = get_fk_fields(self.model)
+
+
+# Inlines
+
+
+class EntityHistoryInline(GenericStackedInlineAdminView):
+    """
+    A subform/inline form for EntityHistory, to be used in the EntityAdminView
+    """
+    model = models.EntityHistory
+    extra = INLINE_EXTRA_DEFAULT
+    fk_name = 'entity'
+    fieldsets = (
+        ('Entity History', {
+            'fields': (
+                'entity',
+                'name',
+                ('start_date_year', 'start_date_month', 'start_date_day'),
+                ('start_year_range_from', 'start_year_range_to', 'start_date_details'),
+                ('end_date_year', 'end_date_month', 'end_date_day'),
+                ('end_year_range_from', 'end_year_range_to', 'end_date_details'),
+            ),
+        }),
+    )
+
+
+class PersonHistoryInline(GenericStackedInlineAdminView):
+    """
+    A subform/inline form for PersonHistory, to be used in the PersonAdminView
+    """
+    model = models.PersonHistory
+
+
+class RelEntityAndEventInline(GenericStackedInlineAdminView):
+    """
+    A subform/inline form for relationships between Entities and Events
+    """
+    model = models.RelEntityAndEvent
+
+
+class RelEntityAndItemInline(GenericStackedInlineAdminView):
+    """
+    A subform/inline form for relationships between Entities and Items
+    """
+    model = models.RelEntityAndItem
+
+
+class RelEntityAndPersonInline(GenericStackedInlineAdminView):
+    """
+    A subform/inline form for relationships between Entities and Persons
+    """
+    model = models.RelEntityAndPerson
+
+
+class RelEventAndItemInline(GenericStackedInlineAdminView):
+    """
+    A subform/inline form for relationships between Events and Items
+    """
+    model = models.RelEventAndItem
+
+
+class RelEventAndPersonInline(GenericStackedInlineAdminView):
+    """
+    A subform/inline form for relationships between Events and Persons
+    """
+    model = models.RelEventAndPerson
+
+
+class RelItemAndItemInline(GenericStackedInlineAdminView):
+    """
+    A subform/inline form for relationships between Items and other Items
+    """
+    model = models.RelItemAndItem
+    fk_name = 'item_1'
+
+
+class RelItemAndPersonInline(GenericStackedInlineAdminView):
+    """
+    A subform/inline form for relationships between Items and Persons
+    """
+    model = models.RelItemAndPerson
+
+
+# AdminViews
 
 
 @admin.register(models.Entity)
@@ -181,6 +199,12 @@ class EntityAdminView(GenericAdminView):
         RelEntityAndEventInline,
         RelEntityAndItemInline,
         RelEntityAndPersonInline
+    )
+    search_fields = (
+        'name',
+        'type__name',
+        'parent_entity__name',
+        'admin_notes'
     )
     fieldsets = (
         ('Entity', {
@@ -210,6 +234,15 @@ class EventAdminView(GenericAdminView):
         RelEventAndItemInline,
         RelEventAndPersonInline
     )
+    search_fields = (
+        'name',
+        'type__name',
+        'activity__name',
+        'labguage__name',
+        'frequency__name',
+        'location',
+        'admin_notes'
+    )
 
 
 @admin.register(models.Item)
@@ -224,6 +257,19 @@ class ItemAdminView(GenericAdminView):
         RelItemAndItemInline,
         RelItemAndPersonInline
     )
+    search_fields = (
+        'name',
+        'item_id',
+        'parent_item__name',
+        'finding_aid',
+        'is_a_collective_item',
+        'type__name',
+        'media__name',
+        'language__name',
+        'publication_status__name',
+        'description',
+        'admin_notes'
+    )
 
 
 @admin.register(models.Person)
@@ -237,6 +283,14 @@ class PersonAdminView(GenericAdminView):
         RelEntityAndPersonInline,
         RelEventAndPersonInline,
         RelItemAndPersonInline
+    )
+    search_fields = (
+        'title',
+        'first_name',
+        'last_name',
+        'other_names',
+        'group_of_persons_description',
+        'admin_notes'
     )
 
 
