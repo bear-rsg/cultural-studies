@@ -152,8 +152,10 @@ class Entity(models.Model):
     """
 
     name = models.CharField(max_length=255, unique=True)
-    type = models.ForeignKey(SlEntityType, on_delete=models.SET_NULL, blank=True, null=True)
+    type = models.ManyToManyField(SlEntityType, blank=True)
     parent_entity = models.ForeignKey('Entity', on_delete=models.CASCADE, blank=True, null=True)
+
+    # Date
     date_year = models.IntegerField(
         blank=True,
         null=True,
@@ -171,6 +173,18 @@ class Entity(models.Model):
         null=True,
         validators=[MinValueValidator(1), MaxValueValidator(31)],
         verbose_name='date (day)'
+    )
+    year_range_from = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='year range (from)'
+    )
+    year_range_to = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='year range (to)'
     )
     date_details = models.CharField(max_length=1000, blank=True, null=True)
 
@@ -217,6 +231,18 @@ class EntityHistory(models.Model):
         validators=[MinValueValidator(1), MaxValueValidator(31)],
         verbose_name='start date (day)'
     )
+    start_year_range_from = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='start year range (from)'
+    )
+    start_year_range_to = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='start year range (to)'
+    )
     start_date_details = models.CharField(max_length=1000, blank=True, null=True)
 
     # Change end date
@@ -238,6 +264,18 @@ class EntityHistory(models.Model):
         validators=[MinValueValidator(1), MaxValueValidator(31)],
         verbose_name='end date (day)'
     )
+    end_year_range_from = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='end year range (from)'
+    )
+    end_year_range_to = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='end year range (to)'
+    )
     end_date_details = models.CharField(max_length=1000, blank=True, null=True)
 
     class Meta:
@@ -250,9 +288,9 @@ class Event(models.Model):
     """
 
     name = models.CharField(max_length=255, unique=True)
-    type = models.ForeignKey(SlEventType, on_delete=models.SET_NULL, blank=True, null=True)
-    activity = models.ForeignKey(SlEventActivity, on_delete=models.SET_NULL, blank=True, null=True)
-    language = models.ForeignKey(SlLanguage, on_delete=models.SET_NULL, blank=True, null=True)
+    type = models.ManyToManyField(SlEventType, blank=True)
+    activity = models.ManyToManyField(SlEventActivity, blank=True)
+    language = models.ManyToManyField(SlLanguage, blank=True)
     frequency = models.ForeignKey(SlEventFrequency, on_delete=models.SET_NULL, blank=True, null=True)
 
     # Location
@@ -285,6 +323,18 @@ class Event(models.Model):
         validators=[MinValueValidator(1), MaxValueValidator(31)],
         verbose_name='start date (day)'
     )
+    start_year_range_from = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='start year range (from)'
+    )
+    start_year_range_to = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='start year range (to)'
+    )
     start_time = models.TimeField(blank=True, null=True)
     start_date_time_details = models.CharField(max_length=1000, blank=True, null=True)
 
@@ -307,6 +357,18 @@ class Event(models.Model):
         validators=[MinValueValidator(1), MaxValueValidator(31)],
         verbose_name='end date (day)'
     )
+    end_year_range_from = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='end year range (from)'
+    )
+    end_year_range_to = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='end year range (to)'
+    )
     end_time = models.TimeField(blank=True, null=True)
     end_date_time_details = models.CharField(max_length=1000, blank=True, null=True)
 
@@ -326,13 +388,14 @@ class Item(models.Model):
 
     name = models.CharField(max_length=255, unique=True)
     item_id = models.CharField(max_length=255, blank=True, null=True)
+    parent_item = models.ForeignKey('Item', on_delete=models.CASCADE, blank=True, null=True)
     finding_aid = models.ForeignKey(SlItemFindingAid, on_delete=models.SET_NULL, blank=True, null=True)
-    type = models.ForeignKey(SlItemType, on_delete=models.SET_NULL, blank=True, null=True)
-    media = models.ForeignKey(SlItemMedia, on_delete=models.SET_NULL, blank=True, null=True)
-    language = models.ForeignKey(SlLanguage, on_delete=models.SET_NULL, blank=True, null=True)
+    is_a_collective_item = models.BooleanField(default=False)
+    type = models.ManyToManyField(SlItemType, blank=True)
+    media = models.ManyToManyField(SlItemMedia, blank=True)
+    language = models.ManyToManyField(SlLanguage, blank=True)
     publication_status = models.ForeignKey(SlItemPublicationStatus, on_delete=models.SET_NULL, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
-    sponsorship = models.TextField(blank=True, null=True)
     created_date_year = models.IntegerField(
         blank=True,
         null=True,
@@ -350,6 +413,18 @@ class Item(models.Model):
         null=True,
         validators=[MinValueValidator(1), MaxValueValidator(31)],
         verbose_name='created date (day)'
+    )
+    created_year_range_from = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='created year range (from)'
+    )
+    created_year_range_to = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='created year range (to)'
     )
     created_date_details = models.CharField(max_length=1000, blank=True, null=True)
 
@@ -372,11 +447,26 @@ class Person(models.Model):
     last_name = models.CharField(max_length=255, blank=True, null=True)
     other_names = models.CharField(max_length=255, blank=True, null=True)
 
+    is_a_group_of_persons = models.BooleanField(default=False)
+    group_of_persons_description = models.CharField(max_length=1000, blank=True, null=True)
+
     # Birth
     birth_year = models.IntegerField(
         blank=True,
         null=True,
         validators=[MinValueValidator(1850), MaxValueValidator(2030)]
+    )
+    birth_year_range_from = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='birth year range (from)'
+    )
+    birth_year_range_to = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='birth year range (to)'
     )
 
     # Death
@@ -384,6 +474,18 @@ class Person(models.Model):
         blank=True,
         null=True,
         validators=[MinValueValidator(1850), MaxValueValidator(2030)]
+    )
+    death_year_range_from = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='death year range (from)'
+    )
+    death_year_range_to = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='death year range (to)'
     )
 
     # Admin and meta fields
@@ -429,6 +531,18 @@ class PersonHistory(models.Model):
         validators=[MinValueValidator(1), MaxValueValidator(31)],
         verbose_name='start date (day)'
     )
+    start_year_range_from = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='start year range (from)'
+    )
+    start_year_range_to = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='start year range (to)'
+    )
     start_date_details = models.CharField(max_length=1000, blank=True, null=True)
 
     # Change end date
@@ -449,6 +563,18 @@ class PersonHistory(models.Model):
         null=True,
         validators=[MinValueValidator(1), MaxValueValidator(31)],
         verbose_name='end date (day)'
+    )
+    end_year_range_from = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='end year range (from)'
+    )
+    end_year_range_to = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='end year range (to)'
     )
     end_date_details = models.CharField(max_length=1000, blank=True, null=True)
 

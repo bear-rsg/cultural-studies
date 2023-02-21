@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.models import Group
+from django.db.models import ManyToManyField
 from django.forms.models import model_to_dict
 from django.utils.html import mark_safe
 from django.urls import reverse
@@ -8,20 +9,21 @@ from . import models
 
 admin.site.site_header = 'Cultural Studies: Admin Dashboard'
 admin.site.unregister(Group)
+
+CUSTOM_ADMIN_CSS = {'all': ('/static/css/admin.css',)}
 INLINE_EXTRA_DEFAULT = 1
 ADMIN_VIEW_LIST_PER_PAGE_DEFAULT = 50
 
 
+def get_manytomany_fields(model, exclude=[]):
+    """
+    Returns a list of strings containing the field names of many to many fields of a model
+    To ignore certain fields, provide a list of such fields using the exclude parameter
+    """
+    return list(f.name for f in model._meta.get_fields() if type(f) == ManyToManyField and f.name not in exclude)
+
+
 # Inlines
-
-
-class PersonHistoryInline(admin.StackedInline):
-    """
-    A subform/inline form for PersonHistory, to be used in the PersonAdminView
-    """
-    model = models.PersonHistory
-    extra = INLINE_EXTRA_DEFAULT
-
 
 class EntityHistoryInline(admin.StackedInline):
     """
@@ -30,6 +32,26 @@ class EntityHistoryInline(admin.StackedInline):
     model = models.EntityHistory
     extra = INLINE_EXTRA_DEFAULT
     fk_name = 'entity'
+    fieldsets = (
+        ('Entity History', {
+            'fields': (
+                'entity',
+                'name',
+                ('start_date_year', 'start_date_month', 'start_date_day'),
+                ('start_year_range_from', 'start_year_range_to', 'start_date_details'),
+                ('end_date_year', 'end_date_month', 'end_date_day'),
+                ('end_year_range_from', 'end_year_range_to', 'end_date_details'),
+            ),
+        }),
+    )
+
+
+class PersonHistoryInline(admin.StackedInline):
+    """
+    A subform/inline form for PersonHistory, to be used in the PersonAdminView
+    """
+    model = models.PersonHistory
+    extra = INLINE_EXTRA_DEFAULT
 
 
 class RelEntityAndEventInline(admin.StackedInline):
@@ -142,6 +164,11 @@ class GenericAdminView(admin.ModelAdmin):
 
         return super().add_view(request, form_url, extra_context)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set all many to many fields to display the filter_horizontal widget
+        self.filter_horizontal = get_manytomany_fields(self.model)
+
 
 @admin.register(models.Entity)
 class EntityAdminView(GenericAdminView):
@@ -155,6 +182,21 @@ class EntityAdminView(GenericAdminView):
         RelEntityAndItemInline,
         RelEntityAndPersonInline
     )
+    fieldsets = (
+        ('Entity', {
+            'fields': (
+                'name',
+                'type',
+                'parent_entity',
+                ('date_year', 'date_month', 'date_day'),
+                ('year_range_from', 'year_range_to', 'date_details'),
+                'admin_notes',
+            ),
+        }),
+    )
+
+    class Media:
+        css = CUSTOM_ADMIN_CSS
 
 
 @admin.register(models.Event)
