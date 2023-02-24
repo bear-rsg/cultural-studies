@@ -13,6 +13,14 @@ admin.site.unregister(Group)
 CUSTOM_ADMIN_CSS = {'all': ('/static/css/admin.css',)}
 INLINE_EXTRA_DEFAULT = 1
 ADMIN_VIEW_LIST_PER_PAGE_DEFAULT = 50
+RELATIONSHIP_STANDARD_FIELDS = [
+    'type',
+    ('relationship_start_date_year', 'relationship_start_date_month', 'relationship_start_date_day'),
+    ('relationship_start_year_range_from', 'relationship_start_year_range_to', 'relationship_start_date_details'),
+    ('relationship_end_date_year', 'relationship_end_date_month', 'relationship_end_date_day'),
+    ('relationship_end_year_range_from', 'relationship_end_year_range_to', 'relationship_end_date_details'),
+    'relationship_details'
+]
 
 
 def get_manytomany_fields(model, exclude=[]):
@@ -103,6 +111,9 @@ class GenericAdminView(admin.ModelAdmin):
         # Set all FK fields to be autocomplete_fields (i.e. searchable select lists)
         self.autocomplete_fields = get_fk_fields(self.model)
 
+    class Media:
+        css = CUSTOM_ADMIN_CSS
+
 
 # Inlines
 
@@ -114,17 +125,13 @@ class EntityHistoryInline(GenericStackedInlineAdminView):
     model = models.EntityHistory
     extra = INLINE_EXTRA_DEFAULT
     fk_name = 'entity'
-    fieldsets = (
-        ('Entity History', {
-            'fields': (
-                'entity',
-                'name',
-                ('start_date_year', 'start_date_month', 'start_date_day'),
-                ('start_year_range_from', 'start_year_range_to', 'start_date_details'),
-                ('end_date_year', 'end_date_month', 'end_date_day'),
-                ('end_year_range_from', 'end_year_range_to', 'end_date_details'),
-            ),
-        }),
+    fields = (
+        'entity',
+        'name',
+        ('start_date_year', 'start_date_month', 'start_date_day'),
+        ('start_year_range_from', 'start_year_range_to', 'start_date_details'),
+        ('end_date_year', 'end_date_month', 'end_date_day'),
+        ('end_year_range_from', 'end_year_range_to', 'end_date_details'),
     )
 
 
@@ -133,6 +140,15 @@ class PersonHistoryInline(GenericStackedInlineAdminView):
     A subform/inline form for PersonHistory, to be used in the PersonAdminView
     """
     model = models.PersonHistory
+    fields = (
+        'person',
+        ('first_name', 'last_name'),
+        'other_names',
+        ('start_date_year', 'start_date_month', 'start_date_day'),
+        ('start_year_range_from', 'start_year_range_to', 'start_date_details'),
+        ('end_date_year', 'end_date_month', 'end_date_day'),
+        ('end_year_range_from', 'end_year_range_to', 'end_date_details'),
+    )
 
 
 class RelEntityAndEventInline(GenericStackedInlineAdminView):
@@ -140,6 +156,10 @@ class RelEntityAndEventInline(GenericStackedInlineAdminView):
     A subform/inline form for relationships between Entities and Events
     """
     model = models.RelEntityAndEvent
+    fields = [
+        'entity',
+        'event',
+    ] + RELATIONSHIP_STANDARD_FIELDS
 
 
 class RelEntityAndItemInline(GenericStackedInlineAdminView):
@@ -147,6 +167,10 @@ class RelEntityAndItemInline(GenericStackedInlineAdminView):
     A subform/inline form for relationships between Entities and Items
     """
     model = models.RelEntityAndItem
+    fields = [
+        'entity',
+        'item',
+    ] + RELATIONSHIP_STANDARD_FIELDS
 
 
 class RelEntityAndPersonInline(GenericStackedInlineAdminView):
@@ -154,6 +178,10 @@ class RelEntityAndPersonInline(GenericStackedInlineAdminView):
     A subform/inline form for relationships between Entities and Persons
     """
     model = models.RelEntityAndPerson
+    fields = [
+        'entity',
+        'person',
+    ] + RELATIONSHIP_STANDARD_FIELDS
 
 
 class RelEventAndItemInline(GenericStackedInlineAdminView):
@@ -161,6 +189,10 @@ class RelEventAndItemInline(GenericStackedInlineAdminView):
     A subform/inline form for relationships between Events and Items
     """
     model = models.RelEventAndItem
+    fields = [
+        'event',
+        'item',
+    ] + RELATIONSHIP_STANDARD_FIELDS
 
 
 class RelEventAndPersonInline(GenericStackedInlineAdminView):
@@ -168,6 +200,10 @@ class RelEventAndPersonInline(GenericStackedInlineAdminView):
     A subform/inline form for relationships between Events and Persons
     """
     model = models.RelEventAndPerson
+    fields = [
+        'event',
+        'person',
+    ] + RELATIONSHIP_STANDARD_FIELDS
 
 
 class RelItemAndItemInline(GenericStackedInlineAdminView):
@@ -176,6 +212,10 @@ class RelItemAndItemInline(GenericStackedInlineAdminView):
     """
     model = models.RelItemAndItem
     fk_name = 'item_1'
+    fields = [
+        'item_1',
+        'item_2',
+    ] + RELATIONSHIP_STANDARD_FIELDS
 
 
 class RelItemAndPersonInline(GenericStackedInlineAdminView):
@@ -183,6 +223,10 @@ class RelItemAndPersonInline(GenericStackedInlineAdminView):
     A subform/inline form for relationships between Items and Persons
     """
     model = models.RelItemAndPerson
+    fields = [
+        'item',
+        'person',
+    ] + RELATIONSHIP_STANDARD_FIELDS
 
 
 # AdminViews
@@ -219,9 +263,6 @@ class EntityAdminView(GenericAdminView):
         }),
     )
 
-    class Media:
-        css = CUSTOM_ADMIN_CSS
-
 
 @admin.register(models.Event)
 class EventAdminView(GenericAdminView):
@@ -238,10 +279,41 @@ class EventAdminView(GenericAdminView):
         'name',
         'type__name',
         'activity__name',
-        'labguage__name',
+        'language__name',
         'frequency__name',
         'location',
         'admin_notes'
+    )
+    fieldsets = (
+        ('Entity', {
+            'fields': (
+                'name',
+                'type',
+                'activity',
+                'language',
+                'frequency',
+                ('location', 'location_coordinates',)
+            )
+        }),
+        ('Start Date/Time', {
+            'fields': (
+                ('start_date_year', 'start_date_month', 'start_date_day'),
+                ('start_year_range_from', 'start_year_range_to'),
+                ('start_time', 'start_date_time_details'),
+            ),
+        }),
+        ('End Date/Time', {
+            'fields': (
+                ('end_date_year', 'end_date_month', 'end_date_day'),
+                ('end_year_range_from', 'end_year_range_to'),
+                ('end_time', 'end_date_time_details'),
+            ),
+        }),
+        ('Admin', {
+            'fields': (
+                'admin_notes',
+            ),
+        })
     )
 
 
@@ -270,6 +342,33 @@ class ItemAdminView(GenericAdminView):
         'description',
         'admin_notes'
     )
+    fieldsets = (
+        ('Item', {
+            'fields': (
+                'name',
+                'item_id',
+                'parent_item',
+                'finding_aid',
+                'is_a_collective_item',
+                'type',
+                'media',
+                'language',
+                'publication_status',
+                'description',
+            )
+        }),
+        ('Created Date', {
+            'fields': (
+                ('created_date_year', 'created_date_month', 'created_date_day'),
+                ('created_year_range_from', 'created_year_range_to', 'created_date_details'),
+            ),
+        }),
+        ('Admin', {
+            'fields': (
+                'admin_notes',
+            ),
+        })
+    )
 
 
 @admin.register(models.Person)
@@ -291,6 +390,31 @@ class PersonAdminView(GenericAdminView):
         'other_names',
         'group_of_persons_description',
         'admin_notes'
+    )
+    fieldsets = (
+        ('Person', {
+            'fields': (
+                'title',
+                ('first_name', 'last_name'),
+                'other_names',
+                ('is_a_group_of_persons', 'group_of_persons_description'),
+            )
+        }),
+        ('Birth Year', {
+            'fields': (
+                ('birth_year', 'birth_year_range_from', 'birth_year_range_to'),
+            ),
+        }),
+        ('Death Year', {
+            'fields': (
+                ('death_year', 'death_year_range_from', 'death_year_range_to'),
+            ),
+        }),
+        ('Admin', {
+            'fields': (
+                'admin_notes',
+            ),
+        })
     )
 
 

@@ -511,6 +511,7 @@ class PersonHistory(models.Model):
     first_name = models.CharField(max_length=255, blank=True, null=True)
     last_name = models.CharField(max_length=255, blank=True, null=True)
     other_names = models.CharField(max_length=255, blank=True, null=True)
+    group_of_persons_description = models.CharField(max_length=1000, blank=True, null=True)
 
     # Change start date
     start_date_year = models.IntegerField(
@@ -584,8 +585,82 @@ class PersonHistory(models.Model):
 
 # Relationship tables (M2M with additional fields)
 
+class RelAbstract(models.Model):
+    """
+    An abstract model for Relationship models
+    See: https://docs.djangoproject.com/en/4.0/topics/db/models/#abstract-base-classes
+    """
 
-class RelEntityAndEvent(models.Model):
+    # Relationship Start Date
+    relationship_start_date_year = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='relationship start date (year)'
+    )
+    relationship_start_date_month = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(12)],
+        verbose_name='relationship start date (month)'
+    )
+    relationship_start_date_day = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(31)],
+        verbose_name='relationship start date (day)'
+    )
+    relationship_start_year_range_from = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='relationship start year range (from)'
+    )
+    relationship_start_year_range_to = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='relationship start year range (to)'
+    )
+    relationship_start_date_details = models.CharField(max_length=1000, blank=True, null=True)
+
+    # Relationship End Date
+    relationship_end_date_year = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='relationship end date (year)'
+    )
+    relationship_end_date_month = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(12)],
+        verbose_name='relationship end date (month)'
+    )
+    relationship_end_date_day = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(31)],
+        verbose_name='relationship end date (day)'
+    )
+    relationship_end_year_range_from = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='relationship end year range (from)'
+    )
+    relationship_end_year_range_to = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='relationship end year range (to)'
+    )
+    relationship_end_date_details = models.CharField(max_length=1000, blank=True, null=True)
+
+    relationship_details = models.TextField(blank=True, null=True)
+
+
+class RelEntityAndEvent(RelAbstract):
     """
     M2M relationship between Entity and Event models
     """
@@ -593,12 +668,9 @@ class RelEntityAndEvent(models.Model):
     entity = models.ForeignKey(Entity, on_delete=models.RESTRICT)
     event = models.ForeignKey(Event, on_delete=models.RESTRICT)
     type = models.ForeignKey(SlTypeRelEntityAndEvent, on_delete=models.SET_NULL, blank=True, null=True)
-    relationship_started = models.CharField(max_length=1000, blank=True, null=True)
-    relationship_ended = models.CharField(max_length=1000, blank=True, null=True)
-    relationship_details = models.TextField(blank=True, null=True)
 
 
-class RelEntityAndItem(models.Model):
+class RelEntityAndItem(RelAbstract):
     """
     M2M relationship between Entity and Item models
     """
@@ -606,14 +678,9 @@ class RelEntityAndItem(models.Model):
     entity = models.ForeignKey(Entity, on_delete=models.RESTRICT)
     item = models.ForeignKey(Item, on_delete=models.RESTRICT)
     type = models.ForeignKey(SlTypeRelEntityAndItem, on_delete=models.SET_NULL, blank=True, null=True)
-    relationship_started = models.CharField(max_length=1000, blank=True, null=True)
-    relationship_ended = models.CharField(max_length=1000, blank=True, null=True)
-    relationship_started = models.CharField(max_length=1000, blank=True, null=True)
-    relationship_ended = models.CharField(max_length=1000, blank=True, null=True)
-    relationship_details = models.TextField(blank=True, null=True)
 
 
-class RelEntityAndPerson(models.Model):
+class RelEntityAndPerson(RelAbstract):
     """
     M2M relationship between Entity and Person models
     """
@@ -621,12 +688,9 @@ class RelEntityAndPerson(models.Model):
     entity = models.ForeignKey(Entity, on_delete=models.RESTRICT)
     person = models.ForeignKey(Person, on_delete=models.RESTRICT)
     type = models.ForeignKey(SlTypeRelEntityAndPerson, on_delete=models.SET_NULL, blank=True, null=True)
-    relationship_started = models.CharField(max_length=1000, blank=True, null=True)
-    relationship_ended = models.CharField(max_length=1000, blank=True, null=True)
-    relationship_details = models.TextField(blank=True, null=True)
 
 
-class RelEventAndItem(models.Model):
+class RelEventAndItem(RelAbstract):
     """
     M2M relationship between Event and Item models
     """
@@ -634,12 +698,9 @@ class RelEventAndItem(models.Model):
     event = models.ForeignKey(Event, on_delete=models.RESTRICT)
     item = models.ForeignKey(Item, on_delete=models.RESTRICT)
     type = models.ForeignKey(SlTypeRelEventAndItem, on_delete=models.SET_NULL, blank=True, null=True)
-    relationship_started = models.CharField(max_length=1000, blank=True, null=True)
-    relationship_ended = models.CharField(max_length=1000, blank=True, null=True)
-    relationship_details = models.TextField(blank=True, null=True)
 
 
-class RelEventAndPerson(models.Model):
+class RelEventAndPerson(RelAbstract):
     """
     M2M relationship between Event and Person models
     """
@@ -647,12 +708,9 @@ class RelEventAndPerson(models.Model):
     event = models.ForeignKey(Event, on_delete=models.RESTRICT)
     person = models.ForeignKey(Person, on_delete=models.RESTRICT)
     type = models.ForeignKey(SlTypeRelEventAndPerson, on_delete=models.SET_NULL, blank=True, null=True)
-    relationship_started = models.CharField(max_length=1000, blank=True, null=True)
-    relationship_ended = models.CharField(max_length=1000, blank=True, null=True)
-    relationship_details = models.TextField(blank=True, null=True)
 
 
-class RelItemAndItem(models.Model):
+class RelItemAndItem(RelAbstract):
     """
     M2M relationship between Item and Item models
     """
@@ -660,12 +718,9 @@ class RelItemAndItem(models.Model):
     item_1 = models.ForeignKey(Item, on_delete=models.RESTRICT, related_name='item_1')
     item_2 = models.ForeignKey(Item, on_delete=models.RESTRICT, related_name='item_2')
     type = models.ForeignKey(SlTypeRelItemAndItem, on_delete=models.SET_NULL, blank=True, null=True)
-    relationship_started = models.CharField(max_length=1000, blank=True, null=True)
-    relationship_ended = models.CharField(max_length=1000, blank=True, null=True)
-    relationship_details = models.TextField(blank=True, null=True)
 
 
-class RelItemAndPerson(models.Model):
+class RelItemAndPerson(RelAbstract):
     """
     M2M relationship between Entity and Item models
     """
@@ -673,6 +728,3 @@ class RelItemAndPerson(models.Model):
     item = models.ForeignKey(Item, on_delete=models.RESTRICT)
     person = models.ForeignKey(Person, on_delete=models.RESTRICT)
     type = models.ForeignKey(SlTypeRelItemAndPerson, on_delete=models.RESTRICT, blank=True, null=True)
-    relationship_started = models.CharField(max_length=1000, blank=True, null=True)
-    relationship_ended = models.CharField(max_length=1000, blank=True, null=True)
-    relationship_details = models.TextField(blank=True, null=True)
