@@ -152,8 +152,9 @@ class Entity(models.Model):
     """
 
     name = models.CharField(max_length=255, unique=True)
-    type = models.ForeignKey(SlEntityType, on_delete=models.SET_NULL, blank=True, null=True)
-    parent_entity = models.ForeignKey('Entity', on_delete=models.CASCADE, blank=True, null=True)
+    type = models.ManyToManyField(SlEntityType, blank=True)
+
+    # Date
     date_year = models.IntegerField(
         blank=True,
         null=True,
@@ -171,6 +172,18 @@ class Entity(models.Model):
         null=True,
         validators=[MinValueValidator(1), MaxValueValidator(31)],
         verbose_name='date (day)'
+    )
+    year_range_from = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='year range (from)'
+    )
+    year_range_to = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='year range (to)'
     )
     date_details = models.CharField(max_length=1000, blank=True, null=True)
 
@@ -217,6 +230,18 @@ class EntityHistory(models.Model):
         validators=[MinValueValidator(1), MaxValueValidator(31)],
         verbose_name='start date (day)'
     )
+    start_year_range_from = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='start year range (from)'
+    )
+    start_year_range_to = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='start year range (to)'
+    )
     start_date_details = models.CharField(max_length=1000, blank=True, null=True)
 
     # Change end date
@@ -238,6 +263,18 @@ class EntityHistory(models.Model):
         validators=[MinValueValidator(1), MaxValueValidator(31)],
         verbose_name='end date (day)'
     )
+    end_year_range_from = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='end year range (from)'
+    )
+    end_year_range_to = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='end year range (to)'
+    )
     end_date_details = models.CharField(max_length=1000, blank=True, null=True)
 
     class Meta:
@@ -250,9 +287,9 @@ class Event(models.Model):
     """
 
     name = models.CharField(max_length=255, unique=True)
-    type = models.ForeignKey(SlEventType, on_delete=models.SET_NULL, blank=True, null=True)
-    activity = models.ForeignKey(SlEventActivity, on_delete=models.SET_NULL, blank=True, null=True)
-    language = models.ForeignKey(SlLanguage, on_delete=models.SET_NULL, blank=True, null=True)
+    type = models.ManyToManyField(SlEventType, blank=True)
+    activity = models.ManyToManyField(SlEventActivity, blank=True)
+    language = models.ManyToManyField(SlLanguage, blank=True)
     frequency = models.ForeignKey(SlEventFrequency, on_delete=models.SET_NULL, blank=True, null=True)
 
     # Location
@@ -285,6 +322,18 @@ class Event(models.Model):
         validators=[MinValueValidator(1), MaxValueValidator(31)],
         verbose_name='start date (day)'
     )
+    start_year_range_from = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='start year range (from)'
+    )
+    start_year_range_to = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='start year range (to)'
+    )
     start_time = models.TimeField(blank=True, null=True)
     start_date_time_details = models.CharField(max_length=1000, blank=True, null=True)
 
@@ -307,6 +356,18 @@ class Event(models.Model):
         validators=[MinValueValidator(1), MaxValueValidator(31)],
         verbose_name='end date (day)'
     )
+    end_year_range_from = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='end year range (from)'
+    )
+    end_year_range_to = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='end year range (to)'
+    )
     end_time = models.TimeField(blank=True, null=True)
     end_date_time_details = models.CharField(max_length=1000, blank=True, null=True)
 
@@ -327,12 +388,13 @@ class Item(models.Model):
     name = models.CharField(max_length=255, unique=True)
     item_id = models.CharField(max_length=255, blank=True, null=True)
     finding_aid = models.ForeignKey(SlItemFindingAid, on_delete=models.SET_NULL, blank=True, null=True)
-    type = models.ForeignKey(SlItemType, on_delete=models.SET_NULL, blank=True, null=True)
-    media = models.ForeignKey(SlItemMedia, on_delete=models.SET_NULL, blank=True, null=True)
-    language = models.ForeignKey(SlLanguage, on_delete=models.SET_NULL, blank=True, null=True)
+    is_a_collective_item = models.BooleanField(default=False)
+    type = models.ManyToManyField(SlItemType, blank=True)
+    media = models.ManyToManyField(SlItemMedia, blank=True)
+    language = models.ManyToManyField(SlLanguage, blank=True)
     publication_status = models.ForeignKey(SlItemPublicationStatus, on_delete=models.SET_NULL, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
-    sponsorship = models.TextField(blank=True, null=True)
+    digital_materials_url = models.URLField(blank=True, null=True)
     created_date_year = models.IntegerField(
         blank=True,
         null=True,
@@ -350,6 +412,18 @@ class Item(models.Model):
         null=True,
         validators=[MinValueValidator(1), MaxValueValidator(31)],
         verbose_name='created date (day)'
+    )
+    created_year_range_from = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='created year range (from)'
+    )
+    created_year_range_to = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='created year range (to)'
     )
     created_date_details = models.CharField(max_length=1000, blank=True, null=True)
 
@@ -372,19 +446,74 @@ class Person(models.Model):
     last_name = models.CharField(max_length=255, blank=True, null=True)
     other_names = models.CharField(max_length=255, blank=True, null=True)
 
+    is_a_group_of_persons = models.BooleanField(default=False)
+    group_of_persons_description = models.CharField(max_length=1000, blank=True, null=True)
+
     # Birth
-    birth_year = models.IntegerField(
+    birth_date_year = models.IntegerField(
         blank=True,
         null=True,
-        validators=[MinValueValidator(1850), MaxValueValidator(2030)]
+        validators=[MinValueValidator(1800), MaxValueValidator(2030)],
+        verbose_name='birth date (year)'
     )
+    birth_date_month = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(12)],
+        verbose_name='birth date (month)'
+    )
+    birth_date_day = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(31)],
+        verbose_name='birth date (day)'
+    )
+    birth_year_range_from = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1800), MaxValueValidator(2030)],
+        verbose_name='birth year range (from)'
+    )
+    birth_year_range_to = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1800), MaxValueValidator(2030)],
+        verbose_name='birth year range (to)'
+    )
+    birth_date_details = models.CharField(max_length=1000, blank=True, null=True)
 
     # Death
-    death_year = models.IntegerField(
+    death_date_year = models.IntegerField(
         blank=True,
         null=True,
-        validators=[MinValueValidator(1850), MaxValueValidator(2030)]
+        validators=[MinValueValidator(1800), MaxValueValidator(2030)],
+        verbose_name='death date (year)'
     )
+    death_date_month = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(12)],
+        verbose_name='death date (month)'
+    )
+    death_date_day = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(31)],
+        verbose_name='death date (day)'
+    )
+    death_year_range_from = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1800), MaxValueValidator(2030)],
+        verbose_name='death year range (from)'
+    )
+    death_year_range_to = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1800), MaxValueValidator(2030)],
+        verbose_name='death year range (to)'
+    )
+    death_date_details = models.CharField(max_length=1000, blank=True, null=True)
 
     # Admin and meta fields
     admin_notes = models.TextField(blank=True, null=True)
@@ -409,6 +538,7 @@ class PersonHistory(models.Model):
     first_name = models.CharField(max_length=255, blank=True, null=True)
     last_name = models.CharField(max_length=255, blank=True, null=True)
     other_names = models.CharField(max_length=255, blank=True, null=True)
+    group_of_persons_description = models.CharField(max_length=1000, blank=True, null=True)
 
     # Change start date
     start_date_year = models.IntegerField(
@@ -428,6 +558,18 @@ class PersonHistory(models.Model):
         null=True,
         validators=[MinValueValidator(1), MaxValueValidator(31)],
         verbose_name='start date (day)'
+    )
+    start_year_range_from = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='start year range (from)'
+    )
+    start_year_range_to = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='start year range (to)'
     )
     start_date_details = models.CharField(max_length=1000, blank=True, null=True)
 
@@ -450,6 +592,18 @@ class PersonHistory(models.Model):
         validators=[MinValueValidator(1), MaxValueValidator(31)],
         verbose_name='end date (day)'
     )
+    end_year_range_from = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='end year range (from)'
+    )
+    end_year_range_to = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='end year range (to)'
+    )
     end_date_details = models.CharField(max_length=1000, blank=True, null=True)
 
     class Meta:
@@ -458,8 +612,91 @@ class PersonHistory(models.Model):
 
 # Relationship tables (M2M with additional fields)
 
+class RelAbstract(models.Model):
+    """
+    An abstract model for Relationship models
+    See: https://docs.djangoproject.com/en/4.0/topics/db/models/#abstract-base-classes
+    """
 
-class RelEntityAndEvent(models.Model):
+    # Relationship Start Date
+    relationship_start_date_year = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='relationship start date (year)'
+    )
+    relationship_start_date_month = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(12)],
+        verbose_name='relationship start date (month)'
+    )
+    relationship_start_date_day = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(31)],
+        verbose_name='relationship start date (day)'
+    )
+    relationship_start_year_range_from = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='relationship start year range (from)'
+    )
+    relationship_start_year_range_to = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='relationship start year range (to)'
+    )
+    relationship_start_date_details = models.CharField(max_length=1000, blank=True, null=True)
+
+    # Relationship End Date
+    relationship_end_date_year = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='relationship end date (year)'
+    )
+    relationship_end_date_month = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(12)],
+        verbose_name='relationship end date (month)'
+    )
+    relationship_end_date_day = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(31)],
+        verbose_name='relationship end date (day)'
+    )
+    relationship_end_year_range_from = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='relationship end year range (from)'
+    )
+    relationship_end_year_range_to = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        verbose_name='relationship end year range (to)'
+    )
+    relationship_end_date_details = models.CharField(max_length=1000, blank=True, null=True)
+
+    relationship_details = models.TextField(blank=True, null=True)
+
+
+class RelEntityAndEntity(RelAbstract):
+    """
+    M2M relationship between Entity and Event models
+    """
+    entity_1 = models.ForeignKey(Entity, on_delete=models.RESTRICT, related_name='entity_1')
+    entity_2 = models.ForeignKey(Entity, on_delete=models.RESTRICT, related_name='entity_2')
+    type = models.ForeignKey(SlTypeRelEntityAndEvent, on_delete=models.SET_NULL, blank=True, null=True)
+
+
+class RelEntityAndEvent(RelAbstract):
     """
     M2M relationship between Entity and Event models
     """
@@ -467,12 +704,9 @@ class RelEntityAndEvent(models.Model):
     entity = models.ForeignKey(Entity, on_delete=models.RESTRICT)
     event = models.ForeignKey(Event, on_delete=models.RESTRICT)
     type = models.ForeignKey(SlTypeRelEntityAndEvent, on_delete=models.SET_NULL, blank=True, null=True)
-    relationship_started = models.CharField(max_length=1000, blank=True, null=True)
-    relationship_ended = models.CharField(max_length=1000, blank=True, null=True)
-    relationship_details = models.TextField(blank=True, null=True)
 
 
-class RelEntityAndItem(models.Model):
+class RelEntityAndItem(RelAbstract):
     """
     M2M relationship between Entity and Item models
     """
@@ -480,14 +714,9 @@ class RelEntityAndItem(models.Model):
     entity = models.ForeignKey(Entity, on_delete=models.RESTRICT)
     item = models.ForeignKey(Item, on_delete=models.RESTRICT)
     type = models.ForeignKey(SlTypeRelEntityAndItem, on_delete=models.SET_NULL, blank=True, null=True)
-    relationship_started = models.CharField(max_length=1000, blank=True, null=True)
-    relationship_ended = models.CharField(max_length=1000, blank=True, null=True)
-    relationship_started = models.CharField(max_length=1000, blank=True, null=True)
-    relationship_ended = models.CharField(max_length=1000, blank=True, null=True)
-    relationship_details = models.TextField(blank=True, null=True)
 
 
-class RelEntityAndPerson(models.Model):
+class RelEntityAndPerson(RelAbstract):
     """
     M2M relationship between Entity and Person models
     """
@@ -495,12 +724,9 @@ class RelEntityAndPerson(models.Model):
     entity = models.ForeignKey(Entity, on_delete=models.RESTRICT)
     person = models.ForeignKey(Person, on_delete=models.RESTRICT)
     type = models.ForeignKey(SlTypeRelEntityAndPerson, on_delete=models.SET_NULL, blank=True, null=True)
-    relationship_started = models.CharField(max_length=1000, blank=True, null=True)
-    relationship_ended = models.CharField(max_length=1000, blank=True, null=True)
-    relationship_details = models.TextField(blank=True, null=True)
 
 
-class RelEventAndItem(models.Model):
+class RelEventAndItem(RelAbstract):
     """
     M2M relationship between Event and Item models
     """
@@ -508,12 +734,9 @@ class RelEventAndItem(models.Model):
     event = models.ForeignKey(Event, on_delete=models.RESTRICT)
     item = models.ForeignKey(Item, on_delete=models.RESTRICT)
     type = models.ForeignKey(SlTypeRelEventAndItem, on_delete=models.SET_NULL, blank=True, null=True)
-    relationship_started = models.CharField(max_length=1000, blank=True, null=True)
-    relationship_ended = models.CharField(max_length=1000, blank=True, null=True)
-    relationship_details = models.TextField(blank=True, null=True)
 
 
-class RelEventAndPerson(models.Model):
+class RelEventAndPerson(RelAbstract):
     """
     M2M relationship between Event and Person models
     """
@@ -521,12 +744,9 @@ class RelEventAndPerson(models.Model):
     event = models.ForeignKey(Event, on_delete=models.RESTRICT)
     person = models.ForeignKey(Person, on_delete=models.RESTRICT)
     type = models.ForeignKey(SlTypeRelEventAndPerson, on_delete=models.SET_NULL, blank=True, null=True)
-    relationship_started = models.CharField(max_length=1000, blank=True, null=True)
-    relationship_ended = models.CharField(max_length=1000, blank=True, null=True)
-    relationship_details = models.TextField(blank=True, null=True)
 
 
-class RelItemAndItem(models.Model):
+class RelItemAndItem(RelAbstract):
     """
     M2M relationship between Item and Item models
     """
@@ -534,12 +754,9 @@ class RelItemAndItem(models.Model):
     item_1 = models.ForeignKey(Item, on_delete=models.RESTRICT, related_name='item_1')
     item_2 = models.ForeignKey(Item, on_delete=models.RESTRICT, related_name='item_2')
     type = models.ForeignKey(SlTypeRelItemAndItem, on_delete=models.SET_NULL, blank=True, null=True)
-    relationship_started = models.CharField(max_length=1000, blank=True, null=True)
-    relationship_ended = models.CharField(max_length=1000, blank=True, null=True)
-    relationship_details = models.TextField(blank=True, null=True)
 
 
-class RelItemAndPerson(models.Model):
+class RelItemAndPerson(RelAbstract):
     """
     M2M relationship between Entity and Item models
     """
@@ -547,6 +764,3 @@ class RelItemAndPerson(models.Model):
     item = models.ForeignKey(Item, on_delete=models.RESTRICT)
     person = models.ForeignKey(Person, on_delete=models.RESTRICT)
     type = models.ForeignKey(SlTypeRelItemAndPerson, on_delete=models.RESTRICT, blank=True, null=True)
-    relationship_started = models.CharField(max_length=1000, blank=True, null=True)
-    relationship_ended = models.CharField(max_length=1000, blank=True, null=True)
-    relationship_details = models.TextField(blank=True, null=True)
