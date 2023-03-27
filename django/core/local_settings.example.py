@@ -25,7 +25,13 @@ else:
     STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
 # Set to ['*'] if in development, or specific IP addresses and domains if in production
-ALLOWED_HOSTS = ['*']/['django-template.bham.ac.uk']
+ALLOWED_HOSTS = ['*']/['culturalstudies.bham.ac.uk']
+
+# Use for Django Debug Toolbar. To hide DDT, simply comment this out.
+# DDT breaks accessibility CI, so don't include in local_settings.test.py
+INTERNAL_IPS = [
+    "127.0.0.1"
+]
 
 # Provide the email address for the site admin (e.g. the researcher/research team)
 ADMIN_EMAIL = '...@bham.ac.uk'
@@ -34,9 +40,9 @@ ADMIN_EMAIL = '...@bham.ac.uk'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'django-template.sqlite3'),
+        'NAME': os.path.join(BASE_DIR, 'cultural-studies.sqlite3'),
         'TEST': {
-            'NAME': os.path.join(BASE_DIR, 'django-template_TEST.sqlite3'),
+            'NAME': os.path.join(BASE_DIR, 'cultural-studies_TEST.sqlite3'),
         },
     }
 }
