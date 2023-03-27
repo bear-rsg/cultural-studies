@@ -151,6 +151,18 @@ class PersonHistoryInline(GenericStackedInlineAdminView):
     )
 
 
+class RelEntityAndEntityInline(GenericStackedInlineAdminView):
+    """
+    A subform/inline form for relationships between Entities and other Entities
+    """
+    model = models.RelEntityAndEntity
+    fk_name = 'entity_1'
+    fields = [
+        'entity_1',
+        'entity_2',
+    ] + RELATIONSHIP_STANDARD_FIELDS
+
+
 class RelEntityAndEventInline(GenericStackedInlineAdminView):
     """
     A subform/inline form for relationships between Entities and Events
@@ -247,7 +259,6 @@ class EntityAdminView(GenericAdminView):
     search_fields = (
         'name',
         'type__name',
-        'parent_entity__name',
         'admin_notes'
     )
     fieldsets = (
@@ -255,7 +266,6 @@ class EntityAdminView(GenericAdminView):
             'fields': (
                 'name',
                 'type',
-                'parent_entity',
                 ('date_year', 'date_month', 'date_day'),
                 ('year_range_from', 'year_range_to', 'date_details'),
                 'admin_notes',
@@ -332,7 +342,6 @@ class ItemAdminView(GenericAdminView):
     search_fields = (
         'name',
         'item_id',
-        'parent_item__name',
         'finding_aid',
         'is_a_collective_item',
         'type__name',
@@ -340,6 +349,7 @@ class ItemAdminView(GenericAdminView):
         'language__name',
         'publication_status__name',
         'description',
+        'digital_materials_url',
         'admin_notes'
     )
     fieldsets = (
@@ -347,7 +357,6 @@ class ItemAdminView(GenericAdminView):
             'fields': (
                 'name',
                 'item_id',
-                'parent_item',
                 'finding_aid',
                 'is_a_collective_item',
                 'type',
@@ -400,14 +409,16 @@ class PersonAdminView(GenericAdminView):
                 ('is_a_group_of_persons', 'group_of_persons_description'),
             )
         }),
-        ('Birth Year', {
+        ('Birth Date', {
             'fields': (
-                ('birth_year', 'birth_year_range_from', 'birth_year_range_to'),
+                ('birth_date_year', 'birth_date_month', 'birth_date_day'),
+                ('birth_year_range_from', 'birth_year_range_to', 'birth_date_details')
             ),
         }),
-        ('Death Year', {
+        ('Death Date', {
             'fields': (
-                ('death_year', 'death_year_range_from', 'death_year_range_to'),
+                ('death_date_year', 'death_date_month', 'death_date_day'),
+                ('death_year_range_from', 'death_year_range_to', 'death_date_details')
             ),
         }),
         ('Admin', {

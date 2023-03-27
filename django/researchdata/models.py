@@ -153,7 +153,6 @@ class Entity(models.Model):
 
     name = models.CharField(max_length=255, unique=True)
     type = models.ManyToManyField(SlEntityType, blank=True)
-    parent_entity = models.ForeignKey('Entity', on_delete=models.CASCADE, blank=True, null=True)
 
     # Date
     date_year = models.IntegerField(
@@ -388,7 +387,6 @@ class Item(models.Model):
 
     name = models.CharField(max_length=255, unique=True)
     item_id = models.CharField(max_length=255, blank=True, null=True)
-    parent_item = models.ForeignKey('Item', on_delete=models.CASCADE, blank=True, null=True)
     finding_aid = models.ForeignKey(SlItemFindingAid, on_delete=models.SET_NULL, blank=True, null=True)
     is_a_collective_item = models.BooleanField(default=False)
     type = models.ManyToManyField(SlItemType, blank=True)
@@ -396,6 +394,7 @@ class Item(models.Model):
     language = models.ManyToManyField(SlLanguage, blank=True)
     publication_status = models.ForeignKey(SlItemPublicationStatus, on_delete=models.SET_NULL, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
+    digital_materials_url = models.URLField(blank=True, null=True)
     created_date_year = models.IntegerField(
         blank=True,
         null=True,
@@ -451,42 +450,70 @@ class Person(models.Model):
     group_of_persons_description = models.CharField(max_length=1000, blank=True, null=True)
 
     # Birth
-    birth_year = models.IntegerField(
+    birth_date_year = models.IntegerField(
         blank=True,
         null=True,
-        validators=[MinValueValidator(1850), MaxValueValidator(2030)]
+        validators=[MinValueValidator(1800), MaxValueValidator(2030)],
+        verbose_name='birth date (year)'
+    )
+    birth_date_month = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(12)],
+        verbose_name='birth date (month)'
+    )
+    birth_date_day = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(31)],
+        verbose_name='birth date (day)'
     )
     birth_year_range_from = models.IntegerField(
         blank=True,
         null=True,
-        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        validators=[MinValueValidator(1800), MaxValueValidator(2030)],
         verbose_name='birth year range (from)'
     )
     birth_year_range_to = models.IntegerField(
         blank=True,
         null=True,
-        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        validators=[MinValueValidator(1800), MaxValueValidator(2030)],
         verbose_name='birth year range (to)'
     )
+    birth_date_details = models.CharField(max_length=1000, blank=True, null=True)
 
     # Death
-    death_year = models.IntegerField(
+    death_date_year = models.IntegerField(
         blank=True,
         null=True,
-        validators=[MinValueValidator(1850), MaxValueValidator(2030)]
+        validators=[MinValueValidator(1800), MaxValueValidator(2030)],
+        verbose_name='death date (year)'
+    )
+    death_date_month = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(12)],
+        verbose_name='death date (month)'
+    )
+    death_date_day = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(31)],
+        verbose_name='death date (day)'
     )
     death_year_range_from = models.IntegerField(
         blank=True,
         null=True,
-        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        validators=[MinValueValidator(1800), MaxValueValidator(2030)],
         verbose_name='death year range (from)'
     )
     death_year_range_to = models.IntegerField(
         blank=True,
         null=True,
-        validators=[MinValueValidator(1900), MaxValueValidator(2030)],
+        validators=[MinValueValidator(1800), MaxValueValidator(2030)],
         verbose_name='death year range (to)'
     )
+    death_date_details = models.CharField(max_length=1000, blank=True, null=True)
 
     # Admin and meta fields
     admin_notes = models.TextField(blank=True, null=True)
@@ -658,6 +685,15 @@ class RelAbstract(models.Model):
     relationship_end_date_details = models.CharField(max_length=1000, blank=True, null=True)
 
     relationship_details = models.TextField(blank=True, null=True)
+
+
+class RelEntityAndEntity(RelAbstract):
+    """
+    M2M relationship between Entity and Event models
+    """
+    entity_1 = models.ForeignKey(Entity, on_delete=models.RESTRICT, related_name='entity_1')
+    entity_2 = models.ForeignKey(Entity, on_delete=models.RESTRICT, related_name='entity_2')
+    type = models.ForeignKey(SlTypeRelEntityAndEvent, on_delete=models.SET_NULL, blank=True, null=True)
 
 
 class RelEntityAndEvent(RelAbstract):
