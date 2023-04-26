@@ -56,12 +56,6 @@ class GenericSlAdminView(admin.ModelAdmin):
     list_display_links = ('id',)
     search_fields = ('name',)
 
-    def get_model_perms(self, request):
-        """
-        Hide SL tables from admin side bar, but still CRUD via inline shortcuts on main models
-        """
-        return {}
-
 
 class GenericStackedInlineAdminView(admin.StackedInline):
     """
@@ -252,6 +246,7 @@ class EntityAdminView(GenericAdminView):
     list_display = ('name', 'use_as_template')
     inlines = (
         EntityHistoryInline,
+        RelEntityAndEntityInline,
         RelEntityAndEventInline,
         RelEntityAndItemInline,
         RelEntityAndPersonInline
@@ -279,7 +274,7 @@ class EventAdminView(GenericAdminView):
     """
     Customise the Event section of the admin dashboard
     """
-    list_display = ('name', 'use_as_template')
+    list_display = ('name', 'location', 'start', 'end', 'use_as_template')
     inlines = (
         RelEntityAndEventInline,
         RelEventAndItemInline,
@@ -332,7 +327,7 @@ class ItemAdminView(GenericAdminView):
     """
     Customise the Item section of the Django admin
     """
-    list_display = ('name', 'use_as_template')
+    list_display = ('name', 'item_id', 'finding_aid', 'is_a_collective_item', 'publication_status', 'use_as_template')
     inlines = (
         RelEntityAndItemInline,
         RelEventAndItemInline,
@@ -385,7 +380,12 @@ class PersonAdminView(GenericAdminView):
     """
     Customise the Person section of the admin dashboard
     """
-    list_display = ('first_name', 'use_as_template')
+    list_display = ('first_name',
+                    'last_name',
+                    'other_names',
+                    'is_a_group_of_persons',
+                    'group_of_persons_description',
+                    'use_as_template')
     inlines = (
         PersonHistoryInline,
         RelEntityAndPersonInline,
@@ -440,6 +440,7 @@ admin.site.register(models.SlItemPublicationStatus, GenericSlAdminView)
 admin.site.register(models.SlItemType, GenericSlAdminView)
 admin.site.register(models.SlLanguage, GenericSlAdminView)
 admin.site.register(models.SlPersonTitle, GenericSlAdminView)
+admin.site.register(models.SlTypeRelEntityAndEntity, GenericSlAdminView)
 admin.site.register(models.SlTypeRelEntityAndEvent, GenericSlAdminView)
 admin.site.register(models.SlTypeRelEntityAndItem, GenericSlAdminView)
 admin.site.register(models.SlTypeRelEntityAndPerson, GenericSlAdminView)
