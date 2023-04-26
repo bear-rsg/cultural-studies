@@ -93,6 +93,13 @@ class SlPersonTitle(SlAbstract):
     """
 
 
+class SlTypeRelEntityAndEntity(SlAbstract):
+    """
+    Select List model used by RelEntityAndEntity (inherits from SlAbstract model)
+    A type of relationship between Entity and Entity
+    """
+
+
 class SlTypeRelEntityAndEvent(SlAbstract):
     """
     Select List model used by RelEntityAndEvent (inherits from SlAbstract model)
@@ -375,6 +382,14 @@ class Event(models.Model):
     admin_notes = models.TextField(blank=True, null=True)
     meta_created_datetime = models.DateTimeField(auto_now_add=True, verbose_name='Created')
     meta_lastupdated_datetime = models.DateTimeField(auto_now=True, verbose_name='Last Updated')
+
+    @property
+    def start(self):
+        return f"{self.start_date_year}-{self.start_date_month}-{self.start_date_day} {self.start_time}"
+
+    @property
+    def end(self):
+        return f"{self.end_date_year}-{self.end_date_month}-{self.end_date_day} {self.end_time}"
 
     def __str__(self):
         return self.name
@@ -693,7 +708,7 @@ class RelEntityAndEntity(RelAbstract):
     """
     entity_1 = models.ForeignKey(Entity, on_delete=models.RESTRICT, related_name='entity_1')
     entity_2 = models.ForeignKey(Entity, on_delete=models.RESTRICT, related_name='entity_2')
-    type = models.ForeignKey(SlTypeRelEntityAndEvent, on_delete=models.SET_NULL, blank=True, null=True)
+    type = models.ForeignKey(SlTypeRelEntityAndEntity, on_delete=models.SET_NULL, blank=True, null=True)
 
 
 class RelEntityAndEvent(RelAbstract):
