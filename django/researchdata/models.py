@@ -386,7 +386,7 @@ class Event(models.Model):
     @property
     def start(self):
         return f"{self.start_date_year}-{self.start_date_month}-{self.start_date_day} {self.start_time}"
-    
+
     @property
     def end(self):
         return f"{self.end_date_year}-{self.end_date_month}-{self.end_date_day} {self.end_time}"

@@ -56,8 +56,6 @@ class GenericSlAdminView(admin.ModelAdmin):
     list_display_links = ('id',)
     search_fields = ('name',)
 
-    
-
 
 class GenericStackedInlineAdminView(admin.StackedInline):
     """
@@ -382,7 +380,12 @@ class PersonAdminView(GenericAdminView):
     """
     Customise the Person section of the admin dashboard
     """
-    list_display = ('first_name', 'last_name', 'other_names', 'is_a_group_of_persons', 'group_of_persons_description', 'use_as_template')
+    list_display = ('first_name',
+                    'last_name',
+                    'other_names',
+                    'is_a_group_of_persons',
+                    'group_of_persons_description',
+                    'use_as_template')
     inlines = (
         PersonHistoryInline,
         RelEntityAndPersonInline,
