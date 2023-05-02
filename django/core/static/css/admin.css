@@ -1,3 +1,7 @@
 .aligned label {
     text-align: right;
 }
+
+.map-widget {
+    display: block;
+}
