@@ -9,7 +9,6 @@ TEMPLATE_DIR = os.path.join(BASE_DIR, 'core/templates')
 # Application definition
 
 INSTALLED_APPS = [
-    'django_light',  # 3rd party, but must be before django.contrib.admin
     # Django default apps
     'django.contrib.admin',
     'django.contrib.auth',
@@ -93,8 +92,6 @@ TIME_ZONE = 'Europe/London'
 
 USE_I18N = False  # Set to True if using internationalisation (translations) in your project
 
-USE_L10N = True
-
 USE_TZ = True
 
 
@@ -135,3 +132,17 @@ except ImportError:
 # Ensure the SECRET_KEY is supplied in local_settings.py - and trust that the other settings are there too.
 if not SECRET_KEY:  # NOQA
     sys.exit('Missing SECRET_KEY in local_settings.py')
+
+
+# Storages
+
+# Default STORAGES from Django documentation
+# See: https://docs.djangoproject.com/en/4.2/ref/settings/#std-setting-STORAGES
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+}
+
+# Use ManifestStaticFilesStorage when not in debug mode
+if not DEBUG:  # NOQA
+    STORAGES['staticfiles'] = {"BACKEND": "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"}
