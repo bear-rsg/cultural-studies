@@ -340,7 +340,7 @@ class ItemAdminView(GenericAdminView):
     search_fields = (
         'name',
         'item_id',
-        'finding_aid',
+        'finding_aid__name',
         'is_a_collective_item',
         'type__name',
         'media__name',
@@ -398,7 +398,7 @@ class PersonAdminView(GenericAdminView):
         RelItemAndPersonInline
     )
     search_fields = (
-        'title',
+        'title__name',
         'first_name',
         'last_name',
         'other_names',
