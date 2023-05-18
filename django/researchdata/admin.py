@@ -244,6 +244,7 @@ class EntityAdminView(GenericAdminView):
     Customise the Entity section of the admin dashboard
     """
     list_display = ('name', 'use_as_template')
+    list_filter = ('type',)
     inlines = (
         EntityHistoryInline,
         RelEntityAndEntityInline,
@@ -275,6 +276,7 @@ class EventAdminView(GenericAdminView):
     Customise the Event section of the admin dashboard
     """
     list_display = ('name', 'location', 'start', 'end', 'use_as_template')
+    list_filter = ('type', 'language', 'activity')
     inlines = (
         RelEntityAndEventInline,
         RelEventAndItemInline,
@@ -328,6 +330,7 @@ class ItemAdminView(GenericAdminView):
     Customise the Item section of the Django admin
     """
     list_display = ('name', 'item_id', 'finding_aid', 'is_a_collective_item', 'publication_status', 'use_as_template')
+    list_filter = ('is_a_collective_item', 'publication_status', 'type', 'language', 'media')
     inlines = (
         RelEntityAndItemInline,
         RelEventAndItemInline,
@@ -337,7 +340,7 @@ class ItemAdminView(GenericAdminView):
     search_fields = (
         'name',
         'item_id',
-        'finding_aid',
+        'finding_aid__name',
         'is_a_collective_item',
         'type__name',
         'media__name',
@@ -383,9 +386,11 @@ class PersonAdminView(GenericAdminView):
     list_display = ('first_name',
                     'last_name',
                     'other_names',
+                    'title',
                     'is_a_group_of_persons',
                     'group_of_persons_description',
                     'use_as_template')
+    list_filter = ('is_a_group_of_persons', 'title')
     inlines = (
         PersonHistoryInline,
         RelEntityAndPersonInline,
@@ -393,7 +398,7 @@ class PersonAdminView(GenericAdminView):
         RelItemAndPersonInline
     )
     search_fields = (
-        'title',
+        'title__name',
         'first_name',
         'last_name',
         'other_names',
