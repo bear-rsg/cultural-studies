@@ -1,6 +1,8 @@
 # Please follow suitable version specifiers, as outlined in https://www.python.org/dev/peps/pep-0440/#version-specifiers
 # For Django versioning we use ~= (e.g. Django~=3.2.0) which will keep the minor version up to date (e.g. the latest version prior to 3.3.0)
 
-Django~=4.2.0
-django-debug-toolbar~=4.0.0
-django-location-field~=2.1.1
+Django~=5.2.0
+django-debug-toolbar~=6.0.0
+django-location-field~=2.7.3
+coverage
+flake8

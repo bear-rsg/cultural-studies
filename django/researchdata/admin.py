@@ -28,7 +28,7 @@ def get_manytomany_fields(model, exclude=[]):
     Returns a list of strings containing the field names of many to many fields of a model
     To ignore certain fields, provide a list of such fields using the exclude parameter
     """
-    return list(f.name for f in model._meta.get_fields() if type(f) == ManyToManyField and f.name not in exclude)
+    return list(f.name for f in model._meta.get_fields() if type(f) is ManyToManyField and f.name not in exclude)
 
 
 def get_fk_fields(model, exclude=[]):
@@ -36,7 +36,7 @@ def get_fk_fields(model, exclude=[]):
     Returns a list of strings containing the field names of ForeignKey fields of a model
     To ignore certain fields, provide a list of such fields using the exclude parameter
     """
-    return list(f.name for f in model._meta.get_fields() if type(f) == ForeignKey and f.name not in exclude)
+    return list(f.name for f in model._meta.get_fields() if type(f) is ForeignKey and f.name not in exclude)
 
 
 # Generic Classes (to be inherited below)
