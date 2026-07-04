@@ -1,0 +1,12 @@
+{
+    "defaults": {
+        "runners": ["axe", "htmlcs"],
+        "chromeLaunchConfig": {
+            "args": ["--no-sandbox"]
+        }
+    },
+    "urls": [
+        "http://localhost:8000/",
+        "http://localhost:8000/cookies/"
+    ]
+}
